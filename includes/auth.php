@@ -9,7 +9,7 @@ function esta_autenticado(): bool
 function require_login(): void
 {
     if (!esta_autenticado()) {
-        header('Location: index.php');
+        header('Location: /tecnostock/index.php');
         exit;
     }
 }

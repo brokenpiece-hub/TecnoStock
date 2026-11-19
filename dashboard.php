@@ -26,6 +26,10 @@ $stockBajo = (int) $pdo->query(
     <p>Productos activos: <?= $productos ?></p>
     <p>Productos con stock bajo: <?= $stockBajo ?></p>
 
-    <p><a href="logout.php">Cerrar sesion</a></p>
+    <p>
+        <a href="productos/index.php">Ver productos</a> |
+        <a href="productos/crear.php">Nuevo producto</a> |
+        <a href="logout.php">Cerrar sesion</a>
+    </p>
 </body>
 </html>
