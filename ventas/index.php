@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 session_start();
 
@@ -7,7 +6,7 @@ require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 
-require_login();
+requerir_permiso('ventas', '../');
 
 $sql = 'SELECT v.id_venta, v.fecha_hora, v.total, v.moneda, u.nombre AS usuario,
                p.codigo, p.nombre AS producto, d.cantidad, d.precio_unitario

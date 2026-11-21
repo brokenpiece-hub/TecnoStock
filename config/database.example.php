@@ -1,10 +1,8 @@
 <?php
-declare(strict_types=1);
 
-// Plantilla para clonar como config/database.php y ajustar segun el entorno.
 $dsn     = 'mysql:host=127.0.0.1;dbname=tecnostock;charset=utf8mb4';
-$usuario = 'root';       // cambiar si usa otro usuario de MySQL
-$clave   = '';           // cambiar si su MariaDB tiene contraseña
+$usuario = 'root';
+$clave   = '';
 
 $opciones = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

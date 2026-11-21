@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 session_start();
 
@@ -39,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_id']    = (int) $usuario['id_usuario'];
             $_SESSION['usuario_nombre'] = $usuario['nombre'];
             $_SESSION['usuario_correo'] = $usuario['correo'];
+            cargar_permisos($pdo, (int) $usuario['id_usuario']);
 
             header('Location: dashboard.php');
             exit;

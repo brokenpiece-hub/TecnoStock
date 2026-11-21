@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 session_start();
 
@@ -7,7 +6,7 @@ require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 
-require_login();
+requerir_permiso('ventas', '../');
 
 $productos = $pdo->query(
     'SELECT id_producto, codigo, nombre, precio, moneda, stock_actual
@@ -40,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare(
                 'SELECT nombre, precio, moneda, stock_actual FROM productos
-                  WHERE id_producto = :id AND estado = 1 FOR UPDATE'
+                  WHERE id_producto = :id AND estado = 1'
             );
             $stmt->execute([':id' => $idProducto]);
             $producto = $stmt->fetch();
@@ -51,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stock = (int) $producto['stock_actual'];
 
-            // Revisa que haya stock suficiente
             if ($cantidad > $stock) {
                 throw new Exception(
                     'No hay stock suficiente para ' . $producto['nombre'] .

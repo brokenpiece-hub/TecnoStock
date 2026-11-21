@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 session_start();
 
@@ -7,7 +6,7 @@ require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 
-require_login();
+requerir_permiso('productos', '../');
 
 $categorias = $pdo->query('SELECT id_categoria, nombre FROM categorias WHERE estado = 1 ORDER BY nombre')->fetchAll();
 
@@ -39,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (mb_strlen($datos['nombre']) < 2 || mb_strlen($datos['nombre']) > 120) {
+    if (strlen($datos['nombre']) < 2 || strlen($datos['nombre']) > 120) {
         $errores[] = 'El nombre debe tener entre 2 y 120 caracteres.';
     }
 

@@ -1,13 +1,5 @@
--- ============================================================================
--- TecnoStock - Base de datos simple (nivel basico)
--- MariaDB 10.11+ / MySQL 8+
---
--- Importar en phpMyAdmin o con:
+-- Importar con:
 --   mysql -u root -e "SOURCE ruta/sin/espacios/tecnostock.sql"
---
--- 6 tablas: usuarios, categorias, productos, movimientos, ventas,
---           detalle_ventas.
--- ============================================================================
 
 SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_ENGINE_SUBSTITUTION';
 SET FOREIGN_KEY_CHECKS = 0;
@@ -20,12 +12,14 @@ DROP TABLE IF EXISTS detalle_ventas;
 DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS movimientos;
 DROP TABLE IF EXISTS productos;
+DROP TABLE IF EXISTS usuario_modulos;
+DROP TABLE IF EXISTS modulos;
 DROP TABLE IF EXISTS categorias;
 DROP TABLE IF EXISTS usuarios;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- 1. Usuarios (login)
+-- Usuarios
 CREATE TABLE usuarios (
   id_usuario INT UNSIGNED NOT NULL AUTO_INCREMENT,
   nombre     VARCHAR(100) NOT NULL,
@@ -37,7 +31,28 @@ CREATE TABLE usuarios (
   CONSTRAINT chk_usuarios_estado CHECK (estado IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Categorias
+-- Modulos
+CREATE TABLE modulos (
+  id_modulo INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  clave     VARCHAR(30) NOT NULL,
+  nombre    VARCHAR(60) NOT NULL,
+  PRIMARY KEY (id_modulo),
+  UNIQUE KEY uq_modulos_clave (clave)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Permisos por usuario
+CREATE TABLE usuario_modulos (
+  id_usuario INT UNSIGNED NOT NULL,
+  id_modulo  INT UNSIGNED NOT NULL,
+  PRIMARY KEY (id_usuario, id_modulo),
+  KEY idx_usuario_modulos_modulo (id_modulo),
+  CONSTRAINT fk_um_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuarios (id_usuario),
+  CONSTRAINT fk_um_modulo FOREIGN KEY (id_modulo)
+    REFERENCES modulos (id_modulo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Categorias
 CREATE TABLE categorias (
   id_categoria INT UNSIGNED NOT NULL AUTO_INCREMENT,
   nombre       VARCHAR(80) NOT NULL,
@@ -48,9 +63,7 @@ CREATE TABLE categorias (
   CONSTRAINT chk_categorias_estado CHECK (estado IN (0,1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Productos
---    moneda = campo "currency" simple (CLP, USD o EUR)
---    stock_actual y stock_minimo son INT: solo numeros enteros >= 0
+-- Productos
 CREATE TABLE productos (
   id_producto   INT UNSIGNED NOT NULL AUTO_INCREMENT,
   codigo        VARCHAR(30) NOT NULL,
@@ -74,7 +87,7 @@ CREATE TABLE productos (
   CONSTRAINT chk_productos_moneda CHECK (moneda IN ('CLP','USD','EUR'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Movimientos (entradas y salidas de bodega)
+-- Movimientos
 CREATE TABLE movimientos (
   id_movimiento INT UNSIGNED NOT NULL AUTO_INCREMENT,
   fecha_hora    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -92,7 +105,7 @@ CREATE TABLE movimientos (
   CONSTRAINT chk_movimientos_cantidad CHECK (cantidad > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 5. Ventas
+-- Ventas
 CREATE TABLE ventas (
   id_venta    INT UNSIGNED NOT NULL AUTO_INCREMENT,
   fecha_hora  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -107,7 +120,7 @@ CREATE TABLE ventas (
   CONSTRAINT chk_ventas_moneda CHECK (moneda IN ('CLP','USD','EUR'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 6. Detalle de ventas
+-- Detalle de ventas
 CREATE TABLE detalle_ventas (
   id_detalle      INT UNSIGNED NOT NULL AUTO_INCREMENT,
   id_venta        INT UNSIGNED NOT NULL,
@@ -124,13 +137,8 @@ CREATE TABLE detalle_ventas (
   CONSTRAINT chk_detalle_precio CHECK (precio_unitario >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ----------------------------------------------------------------------------
 -- Datos semilla
--- Claves: admin/admin123 y operador/operador123 (password_hash)
--- El stock de cada producto coincide con: entradas - salidas de sus movimientos.
--- Hay 3 productos con stock bajo para probar la alerta.
--- Las ventas semilla corresponden a salidas ya registradas.
--- ----------------------------------------------------------------------------
+-- Claves: admin/admin123, operador/operador123 y vendedor/vendedor123
 
 INSERT INTO categorias (id_categoria, nombre, descripcion) VALUES
   (1, 'Accesorios', 'Cables, hubs y accesorios'),
@@ -143,7 +151,20 @@ INSERT INTO usuarios (id_usuario, nombre, correo, clave) VALUES
   (1, 'Admin TecnoStock', 'admin@tecnostock.cl',
    '$2y$12$3hrmwEdBbTxPT8VzCMsfdOR07N3P1O4307YIMod8APDTalvgDmPJy'),
   (2, 'Operador Bodega', 'operador@tecnostock.cl',
-   '$2y$12$rCv2bf1YbrNClOs/Ne2Nbe8qUgaj5sQ/9NQ8Pvw/RoEnHfB1NjCva');
+   '$2y$12$rCv2bf1YbrNClOs/Ne2Nbe8qUgaj5sQ/9NQ8Pvw/RoEnHfB1NjCva'),
+  (3, 'Vendedor Tienda', 'vendedor@tecnostock.cl',
+   '$2y$12$nRhbayDkIsrlDD3bGiFzT.R1PMATzLw.Xvh.5U/cqk79P27.R3ixK');
+
+INSERT INTO modulos (id_modulo, clave, nombre) VALUES
+  (1, 'productos', 'Productos'),
+  (2, 'movimientos', 'Movimientos'),
+  (3, 'ventas', 'Ventas'),
+  (4, 'usuarios', 'Usuarios');
+
+INSERT INTO usuario_modulos (id_usuario, id_modulo) VALUES
+  (1,1), (1,2), (1,3), (1,4),
+  (2,1), (2,2), (2,3),
+  (3,3);
 
 INSERT INTO productos
   (id_producto, codigo, nombre, precio, moneda, stock_actual, stock_minimo, id_categoria, estado)
@@ -188,7 +209,6 @@ INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario) VA
   (2, 2, 18, 24990.00),
   (3, 8, 11,   34.99);
 
--- Verificacion rapida
 SELECT COUNT(*) AS tablas FROM information_schema.tables
  WHERE table_schema = 'tecnostock' AND table_type = 'BASE TABLE';
 
@@ -198,3 +218,5 @@ SELECT codigo, nombre, stock_actual, stock_minimo
 
 SELECT COUNT(*) AS movimientos FROM movimientos;
 SELECT COUNT(*) AS ventas FROM ventas;
+SELECT COUNT(*) AS usuarios FROM usuarios;
+SELECT COUNT(*) AS modulos FROM modulos;

@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 session_start();
 
@@ -7,7 +6,7 @@ require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 
-require_login();
+requerir_permiso('movimientos', '../');
 
 $productos = $pdo->query(
     'SELECT id_producto, codigo, nombre, stock_actual
@@ -46,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare(
                 'SELECT stock_actual, nombre FROM productos
-                  WHERE id_producto = :id AND estado = 1 FOR UPDATE'
+                  WHERE id_producto = :id AND estado = 1'
             );
             $stmt->execute([':id' => $idProducto]);
             $producto = $stmt->fetch();

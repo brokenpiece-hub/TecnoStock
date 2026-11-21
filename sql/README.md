@@ -1,35 +1,39 @@
-# Base de datos TecnoStock (version simple)
+# Base de datos TecnoStock
 
 Script: [`tecnostock.sql`](./tecnostock.sql). Recrea las tablas desde cero.
 
 ## Tablas
 
-| Tabla | Campos principales |
+| Tabla | Campos |
 |---|---|
-| `usuarios` | id, nombre, correo (unico), clave (hash), estado |
-| `categorias` | id, nombre (unico), descripcion, estado |
-| `productos` | id, codigo (unico), nombre, descripcion, precio, **moneda**, stock_actual, stock_minimo, estado, id_categoria |
-| `movimientos` | id, fecha_hora, tipo (entrada/salida), cantidad, observacion, id_producto, id_usuario |
+| `usuarios` | id, nombre, correo, clave, estado |
+| `modulos` | id, clave, nombre |
+| `usuario_modulos` | id_usuario, id_modulo |
+| `categorias` | id, nombre, descripcion, estado |
+| `productos` | id, codigo, nombre, descripcion, precio, moneda, stock_actual, stock_minimo, estado, id_categoria |
+| `movimientos` | id, fecha_hora, tipo, cantidad, observacion, id_producto, id_usuario |
 | `ventas` | id, fecha_hora, total, moneda, id_usuario |
 | `detalle_ventas` | id, id_venta, id_producto, cantidad, precio_unitario |
 
-Relaciones: `productos.id_categoria -> categorias`, `movimientos.id_producto -> productos`, `movimientos.id_usuario -> usuarios`, `detalle_ventas.id_venta -> ventas`, `detalle_ventas.id_producto -> productos`.
+Relaciones: `usuario_modulos` une usuarios con modulos. `productos.id_categoria -> categorias`, `movimientos.id_producto -> productos`, `movimientos.id_usuario -> usuarios`, `detalle_ventas.id_venta -> ventas`, `detalle_ventas.id_producto -> productos`.
 
 ## Validaciones
 
-- Codigo de producto unico (`UNIQUE`).
-- Precio y stocks no negativos (`CHECK`).
-- Cantidad de movimiento y de detalle mayor que cero (`CHECK`).
-- La **moneda** es un campo `CHAR(3)` con `CHECK (moneda IN ('CLP','USD','EUR'))`.
-- Los stocks son `INT`: solo enteros. En el formulario se usa `type="number" step="1" min="0"` y en PHP `filter_var($valor, FILTER_VALIDATE_INT)`.
+- Codigo de producto unico.
+- Correo de usuario unico.
+- Precio y stocks no negativos.
+- Cantidad mayor que cero en movimientos y detalle.
+- Moneda: CLP, USD o EUR.
+- Un usuario no puede repetir el mismo modulo.
 
-> El stock se actualiza desde PHP. Al registrar una venta se revisa el stock, se descuenta y se guarda el movimiento.
+## Usuarios y permisos
 
-## Usuarios semilla
+| Correo | Clave | Modulos |
+|---|---|---|
+| `admin@tecnostock.cl` | `admin123` | Productos, Movimientos, Ventas, Usuarios |
+| `operador@tecnostock.cl` | `operador123` | Productos, Movimientos, Ventas |
+| `vendedor@tecnostock.cl` | `vendedor123` | Ventas |
 
-| Correo | Clave |
-|---|---|
-| `admin@tecnostock.cl` | `admin123` |
-| `operador@tecnostock.cl` | `operador123` |
+Inicio siempre esta disponible despues de iniciar sesion. El menu y cada pagina validan el permiso en PHP.
 
-Hay 9 productos (1 desactivado), 18 movimientos y 3 ventas de ejemplo. Productos con stock bajo: TEC-002, TEC-004 y TEC-007.
+Hay 9 productos (1 desactivado), 18 movimientos y 3 ventas.

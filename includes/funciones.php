@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 function e($valor): string
 {
@@ -44,4 +43,31 @@ function precio_valido($valor): ?string
     }
 
     return number_format($numero, 2, '.', '');
+}
+
+function modulos_disponibles($pdo): array
+{
+    return $pdo->query('SELECT id_modulo, clave, nombre FROM modulos ORDER BY id_modulo')->fetchAll();
+}
+
+function permisos_de_usuario($pdo, $idUsuario): array
+{
+    $stmt = $pdo->prepare('SELECT id_modulo FROM usuario_modulos WHERE id_usuario = :id');
+    $stmt->execute([':id' => $idUsuario]);
+    return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+}
+
+function guardar_permisos($pdo, $idUsuario, $modulos): void
+{
+    $pdo->prepare('DELETE FROM usuario_modulos WHERE id_usuario = :id')->execute([':id' => $idUsuario]);
+
+    $stmt = $pdo->prepare(
+        'INSERT INTO usuario_modulos (id_usuario, id_modulo) VALUES (:id, :modulo)'
+    );
+    foreach ($modulos as $idModulo) {
+        $stmt->execute([
+            ':id'     => $idUsuario,
+            ':modulo' => (int) $idModulo,
+        ]);
+    }
 }

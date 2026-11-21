@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 session_start();
 
@@ -7,7 +6,7 @@ require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 
-require_login();
+requerir_permiso('productos', '../');
 
 $q = trim($_GET['q'] ?? '');
 
