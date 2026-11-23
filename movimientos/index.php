@@ -143,7 +143,7 @@ require __DIR__ . '/../includes/header.php';
         <?php foreach ($movimientos as $fila): ?>
             <tr data-buscar="<?= e($fila['codigo'] . ' ' . $fila['producto'] . ' ' . $fila['observacion'] . ' ' . $fila['usuario']) ?>">
                 <td><?= e($fila['fecha_hora']) ?></td>
-                <td><?= e($fila['codigo']) ?> - <?= e($fila['producto']) ?></td>
+                <td data-orden-valor="<?= e($fila['producto']) ?>"><?= e($fila['codigo']) ?> - <?= e($fila['producto']) ?></td>
                 <td>
                     <span class="badge <?= $fila['tipo'] === 'entrada' ? 'badge-verde' : 'badge-gris' ?>">
                         <?= $fila['tipo'] === 'entrada' ? 'Entrada' : 'Salida' ?>

@@ -178,11 +178,17 @@ a:hover {
     color: var(--nav-suave);
 }
 
-.login-marca h1 {
-    margin: 0;
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: -.04em;
+/* Logo completo solo en el ingreso. */
+.logo-login {
+    margin: 0 auto;
+    max-width: 280px;
+    line-height: 0;
+}
+
+.logo-login svg {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 .login-form {
@@ -254,10 +260,12 @@ a:hover {
     color: var(--nav-suave);
 }
 
-.logo-icono {
-    width: 28px;
-    height: 28px;
-    color: var(--primario-claro);
+/* Monograma TS en el sidebar. */
+.isotipo {
+    display: block;
+    width: 48px;
+    height: auto;
+    flex: 0 0 auto;
 }
 
 .nav {
@@ -574,6 +582,7 @@ a:hover {
 .tabla-scroll {
     max-width: 100%;
     overflow-x: auto;
+    transition: min-height .2s ease;
 }
 
 table {

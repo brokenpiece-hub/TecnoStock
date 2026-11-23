@@ -17,8 +17,9 @@ if (!isset($login)) {
     $login = false;
 }
 
+require __DIR__ . '/logos.php';
+
 $iconos = [
-    'logo'         => '<svg class="icono logo-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/></svg>',
     'inicio'       => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>',
     'productos'    => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/></svg>',
     'movimientos'  => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8h14"/><path d="m15 5 3 3-3 3"/><path d="M20 16H6"/><path d="m9 13-3 3 3 3"/></svg>',
@@ -48,16 +49,17 @@ $iconos = [
             document.documentElement.style.colorScheme = guardado === 'claro' ? 'light' : 'dark';
         })();
     </script>
-    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=10">
+    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=12">
     <script src="<?= e($base) ?>assets/tema.js?v=1" defer></script>
     <script src="<?= e($base) ?>assets/buscador.js?v=4" defer></script>
+    <script src="<?= e($base) ?>assets/ordenar.js?v=2" defer></script>
 </head>
 <body class="<?= $login ? 'login-body' : 'app-body' ?>">
 
 <?php if ($login): ?>
 <div class="login-box">
     <div class="login-marca">
-        <h1>TecnoStock</h1>
+        <h1 class="logo-login"><?= $logos['completo'] ?></h1>
         <p>Sistema de control de inventario</p>
     </div>
     <div class="login-form">
@@ -66,7 +68,7 @@ $iconos = [
 <div class="layout">
     <aside class="sidebar">
         <div class="logo">
-            <?= $iconos['logo'] ?>
+            <?= $logos['isotipo'] ?>
             <span class="logo-texto">TecnoStock <small>ERP de inventario</small></span>
         </div>
 

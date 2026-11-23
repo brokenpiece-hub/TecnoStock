@@ -123,7 +123,7 @@ require __DIR__ . '/../includes/header.php';
             <tr data-buscar="<?= e($fila['id_venta'] . ' ' . $fila['codigo'] . ' ' . $fila['producto'] . ' ' . $fila['usuario']) ?>">
                 <td><?= (int) $fila['id_venta'] ?></td>
                 <td><?= e($fila['fecha_hora']) ?></td>
-                <td><?= e($fila['codigo']) ?> - <?= e($fila['producto']) ?></td>
+                <td data-orden-valor="<?= e($fila['producto']) ?>"><?= e($fila['codigo']) ?> - <?= e($fila['producto']) ?></td>
                 <td><?= (int) $fila['cantidad'] ?></td>
                 <td><?= e($fila['moneda']) ?> <?= e($fila['precio_unitario']) ?></td>
                 <td><strong><?= e($fila['moneda']) ?> <?= e($fila['total']) ?></strong></td>
