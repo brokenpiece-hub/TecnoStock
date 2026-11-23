@@ -112,6 +112,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+/* Si el formulario vuelve con error, recupera el nombre del producto elegido. */
+$nombreProducto = '';
+foreach ($productos as $producto) {
+    if ((string) $producto['id_producto'] === $datos['id_producto']) {
+        $nombreProducto = $producto['nombre'];
+        break;
+    }
+}
+
 $titulo = 'TecnoStock - Nueva venta';
 $base = '../';
 $pagina = 'ventas';
@@ -120,7 +129,7 @@ require __DIR__ . '/../includes/header.php';
 
 <h1>Nueva venta</h1>
 
-<div class="card">
+<div class="card card-sugerencias">
     <?php if (!empty($errores)): ?>
         <ul class="error" role="alert">
             <?php foreach ($errores as $error): ?>
@@ -131,21 +140,24 @@ require __DIR__ . '/../includes/header.php';
 
     <form method="post" action="crear.php">
         <div class="form-grid">
-            <div>
-                <label for="id_producto">Producto</label>
-                <select id="id_producto" name="id_producto" required
-                        onchange="mostrarStock()" onfocus="mostrarStock()">
-                    <option value="">Seleccione...</option>
+            <div class="campo-producto">
+                <label for="buscar-producto">Producto</label>
+                <input type="text" id="buscar-producto" autocomplete="off"
+                       placeholder="Escriba el nombre del producto"
+                       value="<?= e($nombreProducto) ?>"
+                       aria-controls="lista-productos" aria-expanded="false">
+                <input type="hidden" id="id_producto" name="id_producto" value="<?= e($datos['id_producto']) ?>">
+                <ul id="lista-productos" class="lista-sugerencias" role="listbox" aria-label="Productos" hidden>
                     <?php foreach ($productos as $producto): ?>
-                        <option value="<?= (int) $producto['id_producto'] ?>"
-                                data-stock="<?= (int) $producto['stock_actual'] ?>"
-                                data-precio="<?= e($producto['precio']) ?>"
-                                data-moneda="<?= e($producto['moneda']) ?>"
-                            <?= (string) $producto['id_producto'] === $datos['id_producto'] ? 'selected' : '' ?>>
-                            <?= e($producto['codigo']) ?> - <?= e($producto['nombre']) ?>
-                        </option>
+                        <li role="option" aria-selected="false"
+                            data-id="<?= (int) $producto['id_producto'] ?>"
+                            data-nombre="<?= e($producto['nombre']) ?>"
+                            data-stock="<?= (int) $producto['stock_actual'] ?>"
+                            data-precio="<?= e($producto['precio']) ?>"
+                            data-moneda="<?= e($producto['moneda']) ?>"><?= e($producto['nombre']) ?></li>
                     <?php endforeach; ?>
-                </select>
+                    <li class="sin-resultados" hidden>No hay productos con ese nombre.</li>
+                </ul>
             </div>
             <div>
                 <label for="cantidad">Cantidad</label>
@@ -161,26 +173,5 @@ require __DIR__ . '/../includes/header.php';
         </p>
     </form>
 </div>
-
-<script>
-function mostrarStock() {
-    var select = document.getElementById('id_producto');
-    var opcion = select.options[select.selectedIndex];
-    var texto = document.getElementById('stock-disponible');
-    var cantidad = document.getElementById('cantidad');
-
-    if (!opcion || !opcion.getAttribute('data-stock')) {
-        texto.textContent = 'Stock disponible: seleccione un producto';
-        cantidad.max = '';
-        return;
-    }
-
-    var stock = opcion.getAttribute('data-stock');
-    texto.textContent = 'Stock disponible: ' + stock +
-                        ' | Precio: ' + opcion.getAttribute('data-moneda') +
-                        ' ' + opcion.getAttribute('data-precio');
-    cantidad.max = stock;
-}
-</script>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

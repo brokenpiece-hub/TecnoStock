@@ -66,6 +66,11 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
 $ventas = $stmt->fetchAll();
 
+/* Total vendido por moneda: no se suman monedas distintas. */
+$totalesVentas = $pdo->query(
+    'SELECT moneda, SUM(total) AS total FROM ventas GROUP BY moneda ORDER BY moneda'
+)->fetchAll();
+
 $titulo = 'TecnoStock - Ventas';
 $base = '../';
 $pagina = 'ventas';
@@ -73,6 +78,17 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1>Ventas</h1>
+
+<?php if (!empty($totalesVentas)): ?>
+    <div class="metricas">
+        <?php foreach ($totalesVentas as $totalVenta): ?>
+            <div class="metrica exito-metrica">
+                <small>Total vendido en <?= e($totalVenta['moneda']) ?></small>
+                <strong><?= e($totalVenta['moneda']) ?> <?= number_format((float) $totalVenta['total'], 2, '.', '') ?></strong>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">

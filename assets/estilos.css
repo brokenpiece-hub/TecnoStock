@@ -497,6 +497,15 @@ a:hover {
     background: var(--primario-degradado);
 }
 
+/* Esta tarjeta deja salir la lista de sugerencias sin recortarla. */
+.card-sugerencias {
+    overflow: visible;
+}
+
+.card-sugerencias::before {
+    border-radius: var(--radio) var(--radio) 0 0;
+}
+
 .card h2 {
     margin: 0 0 14px;
     font-size: 18px;
@@ -1287,6 +1296,53 @@ input[type="file"] {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 0 16px;
+}
+
+/* Buscador de productos en nuevas ventas. */
+.campo-producto {
+    position: relative;
+}
+
+.campo-producto input[type="text"] {
+    width: 100%;
+}
+
+.lista-sugerencias {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    max-height: 420px;
+    overflow-y: auto;
+    margin: 4px 0 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    box-shadow: var(--sombra);
+}
+
+.lista-sugerencias[hidden] {
+    display: none;
+}
+
+.lista-sugerencias li {
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.lista-sugerencias li:hover,
+.lista-sugerencias li.activo {
+    background: var(--gris-suave);
+}
+
+.lista-sugerencias .sin-resultados {
+    color: var(--texto-suave);
+    cursor: default;
 }
 
 .form-completo {
