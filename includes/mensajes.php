@@ -21,6 +21,12 @@ function texto_mensaje(string $modulo, string $clave): string
             'editado'     => 'Usuario actualizado correctamente.',
             'desactivado' => 'Usuario desactivado correctamente.',
         ],
+        'perfil' => [
+            'guardado'            => 'Perfil actualizado correctamente.',
+            'solicitud_enviada'   => 'Solicitud de cambio de contrasena enviada al administrador.',
+            'clave_aceptada'      => 'Contrasena actualizada correctamente.',
+            'solicitud_rechazada' => 'Solicitud rechazada.',
+        ],
     ];
 
     return $mensajes[$modulo][$clave] ?? '';

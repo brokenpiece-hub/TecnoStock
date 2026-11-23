@@ -8,12 +8,12 @@ require __DIR__ . '/../includes/funciones.php';
 
 requerir_permiso('usuarios', '../');
 
-$sql = 'SELECT u.id_usuario, u.nombre, u.correo, u.estado,
+$sql = 'SELECT u.id_usuario, u.nombre, u.correo, u.estado, u.rut, u.cargo, u.foto,
                GROUP_CONCAT(m.nombre ORDER BY m.id_modulo SEPARATOR ", ") AS modulos
           FROM usuarios u
           LEFT JOIN usuario_modulos um ON um.id_usuario = u.id_usuario
           LEFT JOIN modulos m ON m.id_modulo = um.id_modulo
-         GROUP BY u.id_usuario, u.nombre, u.correo, u.estado
+         GROUP BY u.id_usuario, u.nombre, u.correo, u.estado, u.rut, u.cargo, u.foto
          ORDER BY u.id_usuario';
 
 $usuarios = $pdo->query($sql)->fetchAll();
@@ -29,6 +29,7 @@ require __DIR__ . '/../includes/header.php';
 <div class="card">
     <form class="barra-acciones" method="get" action="index.php">
         <a class="btn btn-acento" href="crear.php">Nuevo usuario</a>
+        <a class="btn" href="../perfil.php">Mi perfil</a>
     </form>
 </div>
 
@@ -40,6 +41,8 @@ require __DIR__ . '/../includes/header.php';
         <thead>
             <tr>
                 <th>Nombre</th>
+                <th>RUT</th>
+                <th>Cargo</th>
                 <th>Correo</th>
                 <th>Modulos permitidos</th>
                 <th>Estado</th>
@@ -49,7 +52,14 @@ require __DIR__ . '/../includes/header.php';
         <tbody>
         <?php foreach ($usuarios as $fila): ?>
             <tr>
-                <td><?= e($fila['nombre']) ?></td>
+                <td>
+                    <?php if (!empty($fila['foto'])): ?>
+                        <img class="avatar avatar-tabla" src="<?= e('../assets/img/usuarios/' . rawurlencode($fila['foto'])) ?>" alt="">
+                    <?php endif; ?>
+                    <?= e($fila['nombre']) ?>
+                </td>
+                <td><?= e($fila['rut'] ?: '—') ?></td>
+                <td><?= e($fila['cargo'] ?: '—') ?></td>
                 <td><?= e($fila['correo']) ?></td>
                 <td><?= e($fila['modulos'] ?: 'Sin accesos') ?></td>
                 <td>

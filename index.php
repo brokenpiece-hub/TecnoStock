@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Ingrese un correo valido y su contrasena.';
     } else {
         $stmt = $pdo->prepare(
-            'SELECT id_usuario, nombre, correo, clave, estado
+            'SELECT id_usuario, nombre, correo, clave, estado, rut, cargo, foto
                FROM usuarios
               WHERE correo = :correo
               LIMIT 1'
@@ -38,6 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_id']    = (int) $usuario['id_usuario'];
             $_SESSION['usuario_nombre'] = $usuario['nombre'];
             $_SESSION['usuario_correo'] = $usuario['correo'];
+            $_SESSION['usuario_rut']    = $usuario['rut'];
+            $_SESSION['usuario_cargo']  = $usuario['cargo'];
+            $_SESSION['usuario_foto']   = $usuario['foto'];
             cargar_permisos($pdo, (int) $usuario['id_usuario']);
 
             header('Location: dashboard.php');

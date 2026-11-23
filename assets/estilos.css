@@ -1592,6 +1592,132 @@ button:active,
     accent-color: var(--primario);
 }
 
+/* Perfil de usuario y solicitudes de contrasena */
+.barra-perfil {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.avatar {
+    display: inline-block;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--superficie);
+    border: 2px solid var(--borde);
+}
+
+.avatar-pequeno {
+    width: 28px;
+    height: 28px;
+}
+
+.avatar-tabla {
+    width: 30px;
+    height: 30px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.avatar-grande {
+    width: 76px;
+    height: 76px;
+    border-width: 3px;
+}
+
+.avatar-inicial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primario), var(--acento));
+}
+
+.perfil-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 18px;
+}
+
+.perfil-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.perfil-cabecera h2 {
+    margin: 0 0 4px;
+}
+
+.perfil-cabecera p {
+    margin: 0;
+    color: var(--texto-suave);
+}
+
+.perfil-solicitudes {
+    grid-column: 1 / -1;
+}
+
+.lista-solicitudes {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.solicitud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--superficie);
+}
+
+.solicitud-datos {
+    display: grid;
+    gap: 3px;
+}
+
+.solicitud-datos small {
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.solicitud-botones {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-ticket,
+.btn-equis {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    color: #fff;
+}
+
+.btn-ticket {
+    background: #2e9e6b;
+}
+
+.btn-equis {
+    background: #d1495b;
+}
+
+.btn-ticket:hover,
+.btn-equis:hover {
+    filter: brightness(1.12);
+}
+
 /* Pantallas pequeñas */
 @media (max-width: 900px) {
     .layout {
@@ -1677,8 +1803,28 @@ button:active,
         padding: 8px;
     }
 
-    .dashboard-dos {
+    .dashboard-dos,
+    .perfil-layout {
         grid-template-columns: 1fr;
+    }
+
+    .solicitud {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .solicitud-botones {
+        width: 100%;
+    }
+
+    .solicitud-botones button {
+        flex: 1;
+    }
+}
+
+@media (max-width: 520px) {
+    .barra-perfil span {
+        display: none;
     }
 }
 

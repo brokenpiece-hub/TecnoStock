@@ -14,6 +14,8 @@ $idsValidos = array_map('intval', array_column($modulos, 'id_modulo'));
 $errores = [];
 $datos = [
     'nombre'  => '',
+    'rut'     => '',
+    'cargo'   => '',
     'correo'  => '',
     'clave'   => '',
     'estado'  => '1',
@@ -22,6 +24,8 @@ $datos = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['nombre'] = trim($_POST['nombre'] ?? '');
+    $datos['rut']    = trim($_POST['rut'] ?? '');
+    $datos['cargo']  = trim($_POST['cargo'] ?? '');
     $datos['correo'] = trim($_POST['correo'] ?? '');
     $datos['clave']  = $_POST['clave'] ?? '';
     $datos['estado'] = trim($_POST['estado'] ?? '1');
@@ -31,6 +35,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (strlen($datos['nombre']) < 2 || strlen($datos['nombre']) > 100) {
         $errores[] = 'El nombre debe tener entre 2 y 100 caracteres.';
+    }
+
+    $rut = rut_normalizado($datos['rut']);
+    if ($datos['rut'] !== '') {
+        if ($rut === '') {
+            $errores[] = 'El RUT debe tener un formato como 12.345.678-9.';
+        } elseif (!rut_disponible($pdo, $rut)) {
+            $errores[] = 'Ese RUT ya esta registrado.';
+        }
+    }
+
+    if ($datos['cargo'] !== '' && strlen($datos['cargo']) > 80) {
+        $errores[] = 'El cargo debe tener maximo 80 caracteres.';
     }
 
     if (filter_var($datos['correo'], FILTER_VALIDATE_EMAIL) === false) {
@@ -56,15 +73,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'Seleccione al menos un modulo.';
     }
 
+    $foto = procesar_imagen_usuario($_FILES['foto'] ?? null);
+    if ($foto['error'] !== '') {
+        $errores[] = $foto['error'];
+    }
+
     if (empty($errores)) {
         $pdo->beginTransaction();
         try {
             $insert = $pdo->prepare(
-                'INSERT INTO usuarios (nombre, correo, clave, estado)
-                 VALUES (:nombre, :correo, :clave, :estado)'
+                'INSERT INTO usuarios (nombre, rut, cargo, foto, correo, clave, estado)
+                 VALUES (:nombre, :rut, :cargo, :foto, :correo, :clave, :estado)'
             );
             $insert->execute([
                 ':nombre' => $datos['nombre'],
+                ':rut'    => $rut !== '' ? $rut : null,
+                ':cargo'  => $datos['cargo'] !== '' ? $datos['cargo'] : null,
+                ':foto'   => $foto['foto'],
                 ':correo' => $datos['correo'],
                 ':clave'  => password_hash($datos['clave'], PASSWORD_DEFAULT),
                 ':estado' => (int) $datos['estado'],
@@ -77,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
+            borrar_imagen_usuario($foto['foto']);
             $errores[] = 'No se pudo guardar el usuario.';
         }
     }
@@ -99,11 +125,24 @@ require __DIR__ . '/../includes/header.php';
         </ul>
     <?php endif; ?>
 
-    <form method="post" action="crear.php">
+    <form method="post" action="crear.php" enctype="multipart/form-data">
         <div class="form-grid">
             <div>
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" required value="<?= e($datos['nombre']) ?>">
+                <input type="text" id="nombre" name="nombre" required maxlength="100" value="<?= e($datos['nombre']) ?>">
+            </div>
+            <div>
+                <label for="rut">RUT (opcional)</label>
+                <input type="text" id="rut" name="rut" maxlength="20" placeholder="12.345.678-9" value="<?= e($datos['rut']) ?>">
+            </div>
+            <div>
+                <label for="cargo">Cargo (opcional)</label>
+                <input type="text" id="cargo" name="cargo" maxlength="80" placeholder="Escriba el cargo" value="<?= e($datos['cargo']) ?>">
+            </div>
+            <div>
+                <label for="foto">Foto (opcional)</label>
+                <input type="file" id="foto" name="foto" accept="image/jpeg,image/png,image/webp">
+                <small class="ayuda">JPG, PNG o WEBP. Maximo 2 MB.</small>
             </div>
             <div>
                 <label for="correo">Correo</label>

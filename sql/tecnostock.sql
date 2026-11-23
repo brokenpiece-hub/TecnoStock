@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS detalle_ventas;
 DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS movimientos;
 DROP TABLE IF EXISTS productos;
+DROP TABLE IF EXISTS solicitudes_clave;
 DROP TABLE IF EXISTS usuario_modulos;
 DROP TABLE IF EXISTS modulos;
 DROP TABLE IF EXISTS categorias;
@@ -24,12 +25,29 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE usuarios (
   id_usuario INT UNSIGNED NOT NULL AUTO_INCREMENT,
   nombre     VARCHAR(100) NOT NULL,
+  rut        VARCHAR(20) NULL,
+  cargo      VARCHAR(80) NULL,
+  foto       VARCHAR(255) NULL,
   correo     VARCHAR(150) NOT NULL,
   clave      VARCHAR(255) NOT NULL COMMENT 'password_hash() de PHP',
   estado     TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (id_usuario),
   UNIQUE KEY uq_correo (correo),
+  UNIQUE KEY uq_usuarios_rut (rut),
   CONSTRAINT chk_usuarios_estado CHECK (estado IN (0,1))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Solicitudes de cambio de contrasena
+CREATE TABLE solicitudes_clave (
+  id_solicitud INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_usuario   INT UNSIGNED NOT NULL,
+  clave_hash   VARCHAR(255) NOT NULL,
+  fecha_hora   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  estado       ENUM('pendiente','aprobada','rechazada') NOT NULL DEFAULT 'pendiente',
+  PRIMARY KEY (id_solicitud),
+  KEY idx_solicitudes_usuario (id_usuario),
+  CONSTRAINT fk_solicitudes_usuario FOREIGN KEY (id_usuario)
+    REFERENCES usuarios (id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Modulos

@@ -13,7 +13,10 @@ if ($id === null || $id === 0) {
     redirigir('index.php');
 }
 
-$stmt = $pdo->prepare('SELECT id_usuario, nombre, correo, clave, estado FROM usuarios WHERE id_usuario = :id');
+$stmt = $pdo->prepare(
+    'SELECT id_usuario, nombre, correo, clave, estado, rut, cargo, foto
+       FROM usuarios WHERE id_usuario = :id'
+);
 $stmt->execute([':id' => $id]);
 $usuario = $stmt->fetch();
 
@@ -36,6 +39,8 @@ foreach ($modulos as $modulo) {
 $errores = [];
 $datos = [
     'nombre'  => $usuario['nombre'],
+    'rut'     => $usuario['rut'] ?? '',
+    'cargo'   => $usuario['cargo'] ?? '',
     'correo'  => $usuario['correo'],
     'estado'  => (string) $usuario['estado'],
     'modulos' => $permisosActuales,
@@ -43,6 +48,8 @@ $datos = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['nombre'] = trim($_POST['nombre'] ?? '');
+    $datos['rut']    = trim($_POST['rut'] ?? '');
+    $datos['cargo']  = trim($_POST['cargo'] ?? '');
     $datos['correo'] = trim($_POST['correo'] ?? '');
     $datos['estado'] = trim($_POST['estado'] ?? '1');
     $claveNueva = $_POST['clave'] ?? '';
@@ -57,6 +64,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (strlen($datos['nombre']) < 2 || strlen($datos['nombre']) > 100) {
         $errores[] = 'El nombre debe tener entre 2 y 100 caracteres.';
+    }
+
+    $rut = rut_normalizado($datos['rut']);
+    if ($datos['rut'] !== '') {
+        if ($rut === '') {
+            $errores[] = 'El RUT debe tener un formato como 12.345.678-9.';
+        } elseif (!rut_disponible($pdo, $rut, $id)) {
+            $errores[] = 'Ese RUT ya esta registrado.';
+        }
+    }
+
+    if ($datos['cargo'] !== '' && strlen($datos['cargo']) > 80) {
+        $errores[] = 'El cargo debe tener maximo 80 caracteres.';
     }
 
     if (filter_var($datos['correo'], FILTER_VALIDATE_EMAIL) === false) {
@@ -82,41 +102,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'Seleccione al menos un modulo.';
     }
 
+    $foto = procesar_imagen_usuario($_FILES['foto'] ?? null);
+    if ($foto['error'] !== '') {
+        $errores[] = $foto['error'];
+    }
+
     if (empty($errores)) {
+        $fotoFinal = $usuario['foto'];
+        if ($foto['foto'] !== null) {
+            $fotoFinal = $foto['foto'];
+        } elseif (isset($_POST['quitar_foto'])) {
+            $fotoFinal = null;
+        }
+
+        $sql = 'UPDATE usuarios
+                   SET nombre = :nombre, rut = :rut, cargo = :cargo, foto = :foto,
+                       correo = :correo, estado = :estado';
+        $parametros = [
+            ':nombre' => $datos['nombre'],
+            ':rut'    => $rut !== '' ? $rut : null,
+            ':cargo'  => $datos['cargo'] !== '' ? $datos['cargo'] : null,
+            ':foto'   => $fotoFinal,
+            ':correo' => $datos['correo'],
+            ':estado' => (int) $datos['estado'],
+            ':id'     => $id,
+        ];
+        if ($claveNueva !== '') {
+            $sql .= ', clave = :clave';
+            $parametros[':clave'] = password_hash($claveNueva, PASSWORD_DEFAULT);
+        }
+        $sql .= ' WHERE id_usuario = :id';
+
         $pdo->beginTransaction();
         try {
-            if ($claveNueva !== '') {
-                $update = $pdo->prepare(
-                    'UPDATE usuarios
-                        SET nombre = :nombre, correo = :correo, clave = :clave, estado = :estado
-                      WHERE id_usuario = :id'
-                );
-                $update->execute([
-                    ':nombre' => $datos['nombre'],
-                    ':correo' => $datos['correo'],
-                    ':clave'  => password_hash($claveNueva, PASSWORD_DEFAULT),
-                    ':estado' => (int) $datos['estado'],
-                    ':id'     => $id,
-                ]);
-            } else {
-                $update = $pdo->prepare(
-                    'UPDATE usuarios
-                        SET nombre = :nombre, correo = :correo, estado = :estado
-                      WHERE id_usuario = :id'
-                );
-                $update->execute([
-                    ':nombre' => $datos['nombre'],
-                    ':correo' => $datos['correo'],
-                    ':estado' => (int) $datos['estado'],
-                    ':id'     => $id,
-                ]);
-            }
-
+            $pdo->prepare($sql)->execute($parametros);
             guardar_permisos($pdo, $id, $datos['modulos']);
             $pdo->commit();
 
+            if ($foto['foto'] !== null && $usuario['foto'] !== null) {
+                borrar_imagen_usuario($usuario['foto']);
+            } elseif (isset($_POST['quitar_foto']) && $foto['foto'] === null) {
+                borrar_imagen_usuario($usuario['foto']);
+            }
+
             if ($esPropio) {
                 cargar_permisos($pdo, $id);
+                $_SESSION['usuario_nombre'] = $datos['nombre'];
+                $_SESSION['usuario_rut']    = $datos['rut'];
+                $_SESSION['usuario_cargo']  = $datos['cargo'];
+                $_SESSION['usuario_foto']   = $fotoFinal;
             }
 
             redirigir('index.php?msg=editado');
@@ -124,6 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
+            borrar_imagen_usuario($foto['foto']);
             $errores[] = 'No se pudo guardar el usuario.';
         }
     }
@@ -150,13 +185,32 @@ require __DIR__ . '/../includes/header.php';
         <p class="mensaje">Estas editando tu propia cuenta. No puedes desactivarte ni quitar tu acceso a Usuarios.</p>
     <?php endif; ?>
 
-    <form method="post" action="editar.php?id=<?= $id ?>">
+    <form method="post" action="editar.php?id=<?= $id ?>" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?= $id ?>">
 
         <div class="form-grid">
             <div>
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" required value="<?= e($datos['nombre']) ?>">
+                <input type="text" id="nombre" name="nombre" required maxlength="100" value="<?= e($datos['nombre']) ?>">
+            </div>
+            <div>
+                <label for="rut">RUT (opcional)</label>
+                <input type="text" id="rut" name="rut" maxlength="20" placeholder="12.345.678-9" value="<?= e($datos['rut']) ?>">
+            </div>
+            <div>
+                <label for="cargo">Cargo (opcional)</label>
+                <input type="text" id="cargo" name="cargo" maxlength="80" value="<?= e($datos['cargo']) ?>">
+            </div>
+            <div>
+                <label for="foto">Foto (opcional)</label>
+                <input type="file" id="foto" name="foto" accept="image/jpeg,image/png,image/webp">
+                <small class="ayuda">JPG, PNG o WEBP. Maximo 2 MB.</small>
+                <?php if (!empty($usuario['foto'])): ?>
+                    <label class="check-linea" for="quitar_foto">
+                        <input type="checkbox" id="quitar_foto" name="quitar_foto" value="1">
+                        Quitar la foto actual
+                    </label>
+                <?php endif; ?>
             </div>
             <div>
                 <label for="correo">Correo</label>

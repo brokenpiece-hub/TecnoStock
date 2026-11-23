@@ -41,7 +41,9 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - Movimientos: registrar entradas y salidas. En una entrada se puede marcar **Crear un producto nuevo**: el producto se guarda con stock 0, la cantidad de la entrada pasa a ser su stock y todo queda registrado en la misma operacion. Esta opcion solo aparece si el usuario tiene permiso de Productos. El historial se puede buscar por producto, observacion o usuario y se puede combinar con el filtro por tipo. Arriba muestra el **total vendido** (de Ventas) y el **gasto en entradas**, los dos agrupados por moneda sin mezclar CLP, USD o EUR; como no hay un costo de compra guardado, el gasto de cada entrada se calcula con la cantidad por el precio del producto. La tarjeta en USD reemplaza al monto USD original: muestra el total vendido y el gasto en entradas ya convertidos con la tasa configurable en `config/cambio.php` (por defecto 1 USD = 1.022,65 CLP, valor de Google Finance del 23-11-2026); EUR no se convierte. Las tarjetas de entradas van juntas y en plateado; las de salidas (ventas) van juntas y en morado.
 - Ventas: registrar venta con descuento de stock y movimiento automatico. En **Nueva venta** el producto ya no se elige de un listado: se escribe su nombre en un buscador y aparece una lista de sugerencias solo con nombres, que se reduce mientras escribes. Al elegir un nombre se guarda el producto, se muestra su stock y precio y se limita la cantidad. El registro se puede buscar por producto, usuario o numero de venta. La lista de sugerencias se muestra completa (al menos 10 nombres) sin recortarse, y el modulo muestra el **total vendido agrupado por moneda** (CLP, USD o EUR), sin sumar monedas distintas; la tarjeta en USD es el total convertido con la tasa de `config/cambio.php`.
 - Stock: vista de solo lectura con existencias, alertas y ultimos movimientos. Muestra la marca, permite buscar productos y filtrar por categoria, marca y stock critico, y tiene un boton **Actualizar** para traer los cambios hechos en Productos. Tambien tiene pestañas **Activos / Stock crítico / Inactivos** para separar los productos sin eliminarlos; si haces clic en el aviso flotante desde aqui, se abre directamente Stock crítico. No tiene botones de edicion.
-- Usuarios: crear, editar, desactivar y asignar permisos por modulo.
+- Usuarios: crear, editar, desactivar y asignar permisos por modulo. Al crear o editar se pueden agregar **RUT**, **cargo** (texto libre) y **foto** (JPG, PNG o WEBP, maximo 2 MB). El listado muestra la foto, el RUT y el cargo. Tiene un atajo **Mi perfil** para ir al perfil del administrador.
+- Perfil: enlace **Perfil** al lado de **Cerrar sesion** en el encabezado. Permite editar nombre, RUT, cargo y foto, y quitar la foto actual. Para cambiar la contrasena, el usuario propone una nueva, se guarda como solicitud pendiente y solo se activa si un administrador la acepta; el estado de la ultima solicitud se muestra en la misma pagina.
+- Solicitudes de contrasena: el administrador ve las solicitudes pendientes en su perfil con botones de ticket (**✓ Aceptar**) y equis (**✗ Rechazar**). Aceptar aplica la clave propuesta; rechazar la descarta.
 - Diseno: paleta oscura violeta inspirada en HBO Max, con modo claro y oscuro. El boton del encabezado cambia el tema y el navegador recuerda la eleccion.
 - Marcas: el logo completo de TecnoStock aparece solo en el ingreso; en el sidebar y en el resto del sistema se usa el monograma TS. Ambos estan en `includes/logos.php`.
 
@@ -55,6 +57,9 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - El stock se actualiza al registrar entradas, salidas y ventas.
 - Toda venta guarda `ventas`, `detalle_ventas`, descuenta el stock y crea una salida en `movimientos` en una sola transaccion.
 - Las imagenes se guardan en `assets/img/productos/`; en la BD solo se guarda el nombre del archivo.
+- Las fotos de usuarios se guardan en `assets/img/usuarios/` con prefijo `usr_`; en la BD solo se guarda el nombre del archivo.
+- El RUT se guarda sin puntos y con la K en mayuscula; no puede repetirse entre usuarios.
+- Al aceptar una solicitud de contrasena se guarda el hash propuesto en `usuarios.clave` y la solicitud pasa a `aprobada`. Rechazar solo cambia su estado a `rechazada`.
 - El modulo Stock solo muestra datos: no permite crear, editar ni desactivar productos.
 - Los productos con movimientos se desactivan, no se eliminan.
 - Desactivar un producto solo cambia su estado: sigue en la BD y aparece en la pestaña Inactivos de Productos y Stock. Activar lo devuelve a la pestaña Activos.
@@ -76,4 +81,8 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - Editar un producto y actualizar Stock: el nuevo stock y la nueva marca aparecen en el modulo Stock.
 - Pestañas Activos/Inactivos en Productos y Stock: los filtros se conservan al cambiar de pestaña y desactivar o activar no borra productos.
 - Creacion y edicion de usuarios con distintos permisos.
+- Crear usuario con RUT, cargo y foto; verlos en el listado y en el perfil.
+- Editar el propio perfil, subir o quitar foto y enviar solicitud de cambio de contrasena.
+- Administrador acepta y rechaza solicitudes desde su perfil con los botones ✓ y ✗.
+- Ingreso con la clave aprobada y rechazo de la clave cuando la solicitud fue rechazada.
 - Cambio de tema claro/oscuro y persistencia despues de recargar la pagina.

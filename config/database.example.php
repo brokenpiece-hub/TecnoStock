@@ -17,3 +17,7 @@ try {
     http_response_code(500);
     exit('Error de conexion a la base de datos.');
 }
+
+/* Deja la base lista para perfil y solicitudes de contrasena. */
+require_once __DIR__ . '/../includes/esquema.php';
+asegurar_esquema_perfil($pdo);

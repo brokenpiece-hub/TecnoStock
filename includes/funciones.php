@@ -168,3 +168,86 @@ function borrar_imagen_producto($archivo): void
         unlink($ruta);
     }
 }
+
+/* RUT de usuario: se guarda sin puntos y con la K en mayuscula. */
+function rut_normalizado($valor): string
+{
+    $rut = strtoupper(str_replace(['.', ' '], '', trim((string) $valor)));
+    return preg_match('/^\d{7,8}-[\dK]$/', $rut) ? $rut : '';
+}
+
+function rut_valido($valor): bool
+{
+    return rut_normalizado($valor) !== '';
+}
+
+function rut_disponible($pdo, string $rut, int $idExcluido = 0): bool
+{
+    if ($rut === '') {
+        return true;
+    }
+
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM usuarios WHERE rut = :rut AND id_usuario <> :id');
+    $stmt->execute([':rut' => $rut, ':id' => $idExcluido]);
+    return (int) $stmt->fetchColumn() === 0;
+}
+
+function ruta_imagen_usuario($archivo, string $base = ''): string
+{
+    if ($archivo === null || $archivo === '') {
+        return '';
+    }
+
+    return $base . 'assets/img/usuarios/' . rawurlencode($archivo);
+}
+
+/* Foto de perfil: JPG, PNG o WEBP, maximo 2 MB. */
+function procesar_imagen_usuario($archivo): array
+{
+    if (!is_array($archivo) || !isset($archivo['error']) || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
+        return ['foto' => null, 'error' => ''];
+    }
+
+    if ($archivo['error'] !== UPLOAD_ERR_OK) {
+        return ['foto' => null, 'error' => 'No se pudo subir la foto.'];
+    }
+
+    if ($archivo['size'] > 2 * 1024 * 1024) {
+        return ['foto' => null, 'error' => 'La foto debe pesar maximo 2 MB.'];
+    }
+
+    $info = @getimagesize($archivo['tmp_name']);
+    $extensiones = [
+        IMAGETYPE_JPEG => 'jpg',
+        IMAGETYPE_PNG  => 'png',
+        IMAGETYPE_WEBP => 'webp',
+    ];
+
+    if ($info === false || !isset($extensiones[$info[2]])) {
+        return ['foto' => null, 'error' => 'La foto debe ser JPG, PNG o WEBP.'];
+    }
+
+    $directorio = __DIR__ . '/../assets/img/usuarios';
+    if (!is_dir($directorio)) {
+        mkdir($directorio, 0755, true);
+    }
+
+    $nombre = 'usr_' . bin2hex(random_bytes(8)) . '.' . $extensiones[$info[2]];
+    if (!move_uploaded_file($archivo['tmp_name'], $directorio . '/' . $nombre)) {
+        return ['foto' => null, 'error' => 'No se pudo guardar la foto.'];
+    }
+
+    return ['foto' => $nombre, 'error' => ''];
+}
+
+function borrar_imagen_usuario($archivo): void
+{
+    if ($archivo === null || $archivo === '') {
+        return;
+    }
+
+    $ruta = __DIR__ . '/../assets/img/usuarios/' . basename($archivo);
+    if (is_file($ruta)) {
+        unlink($ruta);
+    }
+}

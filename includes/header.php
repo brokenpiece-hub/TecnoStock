@@ -26,6 +26,7 @@ $iconos = [
     'stock'        => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>',
     'ventas'       => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h2l2 10h10l2-7H6"/><circle cx="9" cy="19" r="1"/><circle cx="17" cy="19" r="1"/></svg>',
     'usuarios'     => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M17 8a3 3 0 0 1 0 6"/><path d="M18 15c2 .5 3 2 3 4"/></svg>',
+    'perfil'       => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>',
     'sol'          => '<svg class="icono tema-icono-claro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>',
     'luna'         => '<svg class="icono tema-icono-oscuro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>',
 ];
@@ -49,7 +50,7 @@ $iconos = [
             document.documentElement.style.colorScheme = guardado === 'claro' ? 'light' : 'dark';
         })();
     </script>
-    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=26">
+    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=27">
     <script src="<?= e($base) ?>assets/tema.js?v=1" defer></script>
     <script src="<?= e($base) ?>assets/buscador.js?v=4" defer></script>
     <script src="<?= e($base) ?>assets/buscador-ventas.js?v=1" defer></script>
@@ -121,6 +122,14 @@ $iconos = [
                 <span class="tema-texto">Modo claro</span>
             </button>
             <span class="barra-usuario"><?= e($_SESSION['usuario_nombre'] ?? '') ?></span>
+            <a class="barra-perfil" href="<?= e($base) ?>perfil.php">
+                <?php if (!empty($_SESSION['usuario_foto'])): ?>
+                    <img class="avatar avatar-pequeno" src="<?= e($base . 'assets/img/usuarios/' . rawurlencode($_SESSION['usuario_foto'])) ?>" alt="">
+                <?php else: ?>
+                    <?= $iconos['perfil'] ?>
+                <?php endif; ?>
+                <span>Perfil</span>
+            </a>
             <a href="<?= e($base) ?>logout.php">Cerrar sesión</a>
         </header>
 
