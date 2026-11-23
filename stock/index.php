@@ -36,7 +36,7 @@ if (!in_array($direccion, ['asc', 'desc'], true)) {
     $direccion = 'asc';
 }
 
-/* Conteos para las pestañas, sin modificar los productos. */
+/* Conteos para las pestaÃ±as, sin modificar los productos. */
 $conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
 $totalActivos = 0;
 $totalInactivos = 0;
@@ -48,7 +48,7 @@ foreach ($conteos as $conteo) {
     }
 }
 
-/* Filtros compartidos entre pestañas y columnas. */
+/* Filtros compartidos entre pestaÃ±as y columnas. */
 $filtros = ['estado' => $estado];
 foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca] as $clave => $valor) {
     if ($valor !== '') {
@@ -68,7 +68,7 @@ $filtrosInactivos['estado'] = '0';
 $urlInactivos = 'index.php?' . http_build_query($filtrosInactivos);
 
 $sql = 'SELECT p.codigo, p.nombre, p.imagen, p.marca, c.nombre AS categoria,
-               p.stock_actual, p.stock_minimo, p.estado,
+               p.precio, p.moneda, p.stock_actual, p.stock_minimo, p.estado,
                (SELECT MAX(m.fecha_hora) FROM movimientos m
                  WHERE m.id_producto = p.id_producto) AS ultimo_movimiento
           FROM productos p
@@ -184,8 +184,15 @@ require __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="card">
-    <h2>Existencias <small data-total>Total: <?= count($productos) ?></small></h2>
+    <div class="cabecera-lista">
+        <h2>Existencias <small data-total>Total: <?= count($productos) ?></small></h2>
+        <div class="vista-switch" role="group" aria-label="Forma de ver los productos">
+            <button type="button" class="vista-btn" data-vista="lista" aria-pressed="true">Lista</button>
+            <button type="button" class="vista-btn" data-vista="tarjetas" aria-pressed="false">Tarjetas</button>
+        </div>
+    </div>
 
+    <div class="vista-productos" data-vista-productos data-vista="lista">
     <?php if (empty($productos)): ?>
         <?php if ($estado === '0'): ?>
             <p class="vacio">No hay productos inactivos en Stock. Los productos que desactives aparecen aqui.</p>
@@ -197,14 +204,14 @@ require __DIR__ . '/../includes/header.php';
         <table data-buscar>
             <thead>
                 <tr>
-                    <th>Imagen</th>
+                    <th class="th-fijo">Imagen</th>
                     <?= cabecera_ordenable('codigo', 'Codigo', $orden, $direccion, $filtros) ?>
                     <?= cabecera_ordenable('nombre', 'Producto', $orden, $direccion, $filtros) ?>
                     <?= cabecera_ordenable('categoria', 'Categoria', $orden, $direccion, $filtros) ?>
                     <?= cabecera_ordenable('marca', 'Marca', $orden, $direccion, $filtros) ?>
                     <?= cabecera_ordenable('stock_actual', 'Stock actual', $orden, $direccion, $filtros) ?>
                     <?= cabecera_ordenable('stock_minimo', 'Minimo', $orden, $direccion, $filtros) ?>
-                    <th>Estado</th>
+                    <th class="th-fijo">Estado</th>
                     <?= cabecera_ordenable('ultimo_movimiento', 'Ultimo movimiento', $orden, $direccion, $filtros) ?>
                 </tr>
             </thead>
@@ -213,9 +220,10 @@ require __DIR__ . '/../includes/header.php';
                 <?php
                 $activo = (int) $fila['estado'] === 1;
                 $bajo = (int) $fila['stock_actual'] < (int) $fila['stock_minimo'];
+                $barra = barra_stock((int) $fila['stock_actual'], (int) $fila['stock_minimo']);
                 ?>
                 <tr data-buscar="<?= e($fila['codigo'] . ' ' . $fila['nombre'] . ' ' . $fila['categoria'] . ' ' . $fila['marca']) ?>">
-                    <td>
+                    <td class="tarjeta-imagen">
                         <?php if ($fila['imagen'] !== null && $fila['imagen'] !== ''): ?>
                             <img class="miniatura" src="<?= e(ruta_imagen($fila['imagen'], '../')) ?>"
                                  alt="Imagen de <?= e($fila['nombre']) ?>" width="56" height="56" loading="lazy">
@@ -229,21 +237,27 @@ require __DIR__ . '/../includes/header.php';
                             </span>
                         <?php endif; ?>
                     </td>
-                    <td><?= e($fila['codigo']) ?></td>
-                    <td><?= e($fila['nombre']) ?></td>
-                    <td><?= e($fila['categoria']) ?></td>
-                    <td><?= e($fila['marca']) ?></td>
-                    <td>
+                    <td data-label="Codigo"><?= e($fila['codigo']) ?></td>
+                    <td class="tarjeta-nombre" data-label="Producto"><?= e($fila['nombre']) ?></td>
+                    <td data-label="Categoria"><?= e($fila['categoria']) ?></td>
+                    <td data-label="Marca"><?= e($fila['marca']) ?></td>
+                    <td class="tarjeta-stock" data-label="Stock actual">
                         <?= (int) $fila['stock_actual'] ?>
                         <?php if ($bajo && $activo): ?> <span class="badge badge-rojo">Stock bajo</span><?php endif; ?>
+                        <span class="barra-stock" role="img" data-porcentaje="<?= $barra['porcentaje'] ?>"
+                              data-color="<?= e($barra['color']) ?>"
+                              aria-label="Stock <?= e($barra['texto']) ?>, barra al <?= $barra['porcentaje'] ?>%">
+                            <span class="barra-stock-relleno <?= e($barra['clase']) ?>" style="width: <?= $barra['porcentaje'] ?>%"></span>
+                        </span>
                     </td>
-                    <td><?= (int) $fila['stock_minimo'] ?></td>
-                    <td>
+                    <td data-label="Minimo"><?= (int) $fila['stock_minimo'] ?></td>
+                    <td data-label="Estado">
                         <span class="badge <?= $activo ? 'badge-verde' : 'badge-gris' ?>">
                             <?= $activo ? 'Activo' : 'Inactivo' ?>
                         </span>
                     </td>
-                    <td><?= $fila['ultimo_movimiento'] === null ? 'Sin movimientos' : e($fila['ultimo_movimiento']) ?></td>
+                    <td data-label="Ultimo movimiento"><?= $fila['ultimo_movimiento'] === null ? 'Sin movimientos' : e($fila['ultimo_movimiento']) ?></td>
+                    <td class="tarjeta-precio solo-tarjeta" data-label="Precio"><?= e($fila['moneda']) ?> <?= e($fila['precio']) ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
@@ -251,6 +265,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <p class="vacio buscador-vacio" hidden>No hay resultados para esta busqueda.</p>
     <?php endif; ?>
+    </div>
 </div>
 
 <div class="card">

@@ -9,6 +9,10 @@ require __DIR__ . '/../includes/ordenamiento.php';
 
 requerir_permiso('productos', '../');
 
+/* Iconos de las acciones en la esquina de cada tarjeta. */
+$iconoEditar = '<svg class="icono-accion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>';
+$iconoApagado = '<svg class="icono-accion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2v10"/><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/></svg>';
+
 $q = trim($_GET['q'] ?? '');
 $idCategoria = entero_no_negativo($_GET['id_categoria'] ?? null);
 $marca = trim($_GET['marca'] ?? '');
@@ -21,7 +25,7 @@ if (!in_array($estado, ['1', '0'], true)) {
     $estado = '1';
 }
 
-/* Conteos para las pestañas: no borra ni oculta productos, solo los separa. */
+/* Conteos para las pestaÃ±as: no borra ni oculta productos, solo los separa. */
 $conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
 $totalActivos = 0;
 $totalInactivos = 0;
@@ -52,7 +56,7 @@ if (!in_array($direccion, ['asc', 'desc'], true)) {
     $direccion = 'asc';
 }
 
-/* Los filtros se comparten entre pestañas y columnas para no perderlos. */
+/* Los filtros se comparten entre pestaÃ±as y columnas para no perderlos. */
 $filtros = ['estado' => $estado];
 foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca, 'stock_critico' => $stockCritico] as $clave => $valor) {
     if ($valor !== null && $valor !== '') {
@@ -191,8 +195,15 @@ require __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="card">
-    <h2>Listado <small data-total>Total: <?= count($productos) ?></small></h2>
+    <div class="cabecera-lista">
+        <h2>Listado <small data-total>Total: <?= count($productos) ?></small></h2>
+        <div class="vista-switch" role="group" aria-label="Forma de ver los productos">
+            <button type="button" class="vista-btn" data-vista="lista" aria-pressed="true">Lista</button>
+            <button type="button" class="vista-btn" data-vista="tarjetas" aria-pressed="false">Tarjetas</button>
+        </div>
+    </div>
 
+    <div class="vista-productos" data-vista-productos data-acciones data-vista="lista">
     <?php if (empty($productos)): ?>
         <?php if ($estado === '0'): ?>
             <p class="vacio">No hay productos inactivos. Los productos que desactives se guardan aqui.</p>
@@ -204,7 +215,7 @@ require __DIR__ . '/../includes/header.php';
     <table data-buscar>
         <thead>
             <tr>
-                <th>Imagen</th>
+                <th class="th-fijo">Imagen</th>
                 <?= cabecera_ordenable('codigo', 'Codigo', $orden, $direccion, $filtros) ?>
                 <?= cabecera_ordenable('nombre', 'Nombre', $orden, $direccion, $filtros) ?>
                 <?= cabecera_ordenable('categoria', 'Categoria', $orden, $direccion, $filtros) ?>
@@ -212,8 +223,8 @@ require __DIR__ . '/../includes/header.php';
                 <?= cabecera_ordenable('precio', 'Precio', $orden, $direccion, $filtros) ?>
                 <?= cabecera_ordenable('stock_actual', 'Stock actual', $orden, $direccion, $filtros) ?>
                 <?= cabecera_ordenable('stock_minimo', 'Stock critico', $orden, $direccion, $filtros) ?>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th class="th-fijo">Estado</th>
+                <th class="th-fijo">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -223,9 +234,10 @@ require __DIR__ . '/../includes/header.php';
             $stockCriticoFila = (int) $fila['stock_minimo'];
             $stockBajo    = $stockActual < $stockCriticoFila;
             $activo       = (int) $fila['estado'] === 1;
+            $barra        = barra_stock($stockActual, $stockCriticoFila);
             ?>
             <tr data-buscar="<?= e($fila['codigo'] . ' ' . $fila['nombre'] . ' ' . $fila['categoria'] . ' ' . $fila['marca']) ?>">
-                <td>
+                <td class="tarjeta-imagen">
                     <?php if ($fila['imagen'] !== null && $fila['imagen'] !== ''): ?>
                         <img class="miniatura" src="<?= e(ruta_imagen($fila['imagen'], '../')) ?>"
                              alt="Imagen de <?= e($fila['nombre']) ?>" width="56" height="56" loading="lazy">
@@ -239,34 +251,46 @@ require __DIR__ . '/../includes/header.php';
                         </span>
                     <?php endif; ?>
                 </td>
-                <td><?= e($fila['codigo']) ?></td>
-                <td><?= e($fila['nombre']) ?></td>
-                <td><?= e($fila['categoria']) ?></td>
-                <td><?= e($fila['marca']) ?></td>
-                <td><?= e($fila['moneda']) ?> <?= e($fila['precio']) ?></td>
-                <td>
+                <td data-label="Codigo"><?= e($fila['codigo']) ?></td>
+                <td class="tarjeta-nombre" data-label="Nombre"><?= e($fila['nombre']) ?></td>
+                <td data-label="Categoria"><?= e($fila['categoria']) ?></td>
+                <td data-label="Marca"><?= e($fila['marca']) ?></td>
+                <td class="tarjeta-precio" data-label="Precio"><?= e($fila['moneda']) ?> <?= e($fila['precio']) ?></td>
+                <td class="tarjeta-stock" data-label="Stock actual">
                     <?= $stockActual ?>
                     <?php if ($stockBajo): ?> <span class="badge badge-rojo">Stock bajo</span><?php endif; ?>
+                    <span class="barra-stock" role="img" data-porcentaje="<?= $barra['porcentaje'] ?>"
+                          data-color="<?= e($barra['color']) ?>"
+                          aria-label="Stock <?= e($barra['texto']) ?>, barra al <?= $barra['porcentaje'] ?>%">
+                        <span class="barra-stock-relleno <?= e($barra['clase']) ?>" style="width: <?= $barra['porcentaje'] ?>%"></span>
+                    </span>
                 </td>
-                <td><?= $stockCriticoFila ?></td>
-                <td>
+                <td data-label="Stock critico"><?= $stockCriticoFila ?></td>
+                <td data-label="Estado">
                     <span class="badge <?= $activo ? 'badge-verde' : 'badge-gris' ?>">
                         <?= $activo ? 'Activo' : 'Inactivo' ?>
                     </span>
                 </td>
-                <td class="acciones">
-                    <a class="btn btn-pequeno" href="editar.php?id=<?= (int) $fila['id_producto'] ?>">Editar</a>
+                <td class="acciones" data-label="Acciones">
+                    <a class="btn btn-pequeno" href="editar.php?id=<?= (int) $fila['id_producto'] ?>"
+                       title="Editar" aria-label="Editar">
+                        <?= $iconoEditar ?><span class="texto-accion">Editar</span>
+                    </a>
                     <?php if ($activo): ?>
                         <form method="post" action="desactivar.php"
                               onsubmit="return confirm('Desactivar este producto?');">
                             <input type="hidden" name="id" value="<?= (int) $fila['id_producto'] ?>">
-                            <button class="btn btn-gris btn-pequeno" type="submit">Desactivar</button>
+                            <button class="btn btn-gris btn-pequeno" type="submit" title="Desactivar" aria-label="Desactivar">
+                                <?= $iconoApagado ?><span class="texto-accion">Desactivar</span>
+                            </button>
                         </form>
                     <?php else: ?>
                         <form method="post" action="activar.php"
                               onsubmit="return confirm('Activar este producto?');">
                             <input type="hidden" name="id" value="<?= (int) $fila['id_producto'] ?>">
-                            <button class="btn btn-acento btn-pequeno" type="submit">Activar</button>
+                            <button class="btn btn-acento btn-pequeno accion-activar" type="submit" title="Activar" aria-label="Activar">
+                                <?= $iconoApagado ?><span class="texto-accion">Activar</span>
+                            </button>
                         </form>
                     <?php endif; ?>
                 </td>
@@ -277,6 +301,7 @@ require __DIR__ . '/../includes/header.php';
     </div>
     <p class="vacio buscador-vacio" hidden>No hay resultados para esta busqueda.</p>
     <?php endif; ?>
+    </div>
 </div>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

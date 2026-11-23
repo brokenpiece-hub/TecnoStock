@@ -496,6 +496,50 @@ a:hover {
     color: var(--texto-suave);
 }
 
+/* Botones para elegir lista o tarjetas. */
+.cabecera-lista {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.cabecera-lista h2 {
+    margin: 0;
+}
+
+.vista-switch {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: var(--campo);
+}
+
+.vista-btn {
+    min-height: 32px;
+    padding: 5px 12px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vista-btn:hover {
+    color: var(--texto);
+}
+
+.vista-btn.activo {
+    background: var(--primario-degradado);
+    color: #FFFFFF;
+}
+
 .metricas {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
@@ -660,6 +704,232 @@ tbody tr:hover {
     display: none;
 }
 
+/* Vista de tarjetas: es la misma tabla acomodada como grilla. */
+.vista-productos[data-vista="tarjetas"] .tabla-scroll {
+    overflow: visible;
+}
+
+.vista-productos[data-vista="tarjetas"] table,
+.vista-productos[data-vista="tarjetas"] thead,
+.vista-productos[data-vista="tarjetas"] tbody {
+    display: block;
+    width: 100%;
+}
+
+.vista-productos[data-vista="tarjetas"] thead {
+    margin-bottom: 14px;
+}
+
+.vista-productos[data-vista="tarjetas"] thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.vista-productos[data-vista="tarjetas"] thead th {
+    padding: 6px 10px;
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: var(--campo);
+}
+
+.vista-productos[data-vista="tarjetas"] thead th.th-fijo {
+    display: none;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+}
+
+/* Celda que solo se usa en la tarjeta (por ejemplo, el precio en Stock). */
+.solo-tarjeta {
+    display: none;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-width: 0;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    background: var(--campo);
+    overflow: hidden;
+}
+
+/* En Productos la columna derecha la ocupan los iconos de accion. */
+.vista-productos[data-vista="tarjetas"][data-acciones] tbody tr {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody tr[hidden] {
+    display: none;
+}
+
+/* En la tarjeta solo se ven foto, nombre, precio y stock. */
+.vista-productos[data-vista="tarjetas"] tbody td {
+    display: none;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-imagen,
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-nombre,
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-precio,
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-stock,
+.vista-productos[data-vista="tarjetas"] tbody td.acciones {
+    display: flex;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-imagen {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-content: center;
+    padding: 0;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-nombre {
+    grid-column: 1;
+    grid-row: 2;
+    align-items: flex-start;
+    min-width: 0;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    border-bottom: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Stock no tiene iconos, asi que el nombre ocupa las dos columnas. */
+.vista-productos[data-vista="tarjetas"]:not([data-acciones]) tbody td.tarjeta-nombre {
+    grid-column: 1 / -1;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-precio,
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-stock {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-top: 1px solid var(--borde);
+    border-bottom: 0;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-precio {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-stock {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-precio::before,
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-stock::before {
+    content: attr(data-label);
+    color: var(--texto-suave);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-imagen::before,
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-nombre::before {
+    display: none;
+}
+
+/* Barra de stock: se llena con las entradas y baja con salidas y ventas. */
+.barra-stock {
+    display: none;
+    width: 100%;
+    height: 6px;
+    margin-top: 6px;
+    border-radius: 999px;
+    background: var(--gris-suave);
+    overflow: hidden;
+}
+
+.barra-stock-relleno {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width .35s ease, background-color .2s ease;
+}
+
+.barra-verde { background: var(--exito); }
+.barra-amarilla { background: var(--alerta); }
+.barra-roja { background: var(--peligro); }
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-stock .barra-stock {
+    display: block;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.tarjeta-stock .badge {
+    display: none;
+}
+
+/* Acciones como iconos pequenos al lado del nombre, sin cubrir la foto. */
+.vista-productos[data-vista="tarjetas"] tbody td.acciones {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 8px 10px 0 4px;
+    border: 0;
+}
+
+.vista-productos[data-vista="tarjetas"] tbody td.acciones::before {
+    display: none;
+}
+
+.vista-productos[data-vista="tarjetas"] td.acciones .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+    background: var(--campo);
+    color: var(--texto);
+}
+
+.vista-productos[data-vista="tarjetas"] td.acciones .accion-activar {
+    background: var(--exito);
+    border-color: transparent;
+    color: #07130D;
+}
+
+.vista-productos[data-vista="tarjetas"] .texto-accion {
+    display: none;
+}
+
+.vista-productos[data-vista="tarjetas"] .icono-accion {
+    display: block;
+}
+
+/* La foto se achica completa, sin recortes. */
+.vista-productos[data-vista="tarjetas"] .miniatura,
+.vista-productos[data-vista="tarjetas"] .sin-imagen {
+    width: 100%;
+    height: 150px;
+    padding: 10px;
+    border: 0;
+    border-radius: 0;
+    object-fit: contain;
+}
+
+.vista-productos[data-vista="tarjetas"] .sin-imagen svg {
+    width: 42px;
+    height: 42px;
+}
+
 /* Etiquetas de estado */
 .badge {
     display: inline-block;
@@ -770,7 +1040,7 @@ input[type="file"] {
     display: block;
     width: 56px;
     height: 56px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid var(--borde);
     border-radius: 8px;
     background: var(--campo);
@@ -901,6 +1171,14 @@ button:active,
 
 .acciones form {
     display: inline;
+}
+
+/* El icono solo aparece en la vista de tarjetas. */
+.icono-accion {
+    display: none;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
 }
 
 /* Mensajes */

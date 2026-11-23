@@ -45,6 +45,44 @@ function precio_valido($valor): ?string
     return number_format($numero, 2, '.', '');
 }
 
+/* Datos para la barra de stock de las tarjetas.
+   La referencia es siempre 50: con 50 o mas la barra queda llena y desde ahi baja. */
+function barra_stock($actual, $minimo): array
+{
+    $actual = max(0, (int) $actual);
+    $minimo = max(0, (int) $minimo);
+
+    $objetivo = 50;
+    $porcentaje = (int) round(($actual / $objetivo) * 100);
+    $porcentaje = max(0, min(100, $porcentaje));
+
+    /* En critico o por debajo la barra nunca se ve llena. */
+    if ($actual <= $minimo) {
+        $porcentaje = min($porcentaje, 95);
+    }
+
+    if ($actual < $minimo) {
+        $color = 'rojo';
+        $clase = 'barra-roja';
+        $texto = 'bajo el stock critico';
+    } elseif ($actual === $minimo) {
+        $color = 'amarillo';
+        $clase = 'barra-amarilla';
+        $texto = 'en el stock critico';
+    } else {
+        $color = 'verde';
+        $clase = 'barra-verde';
+        $texto = 'sobre el stock critico';
+    }
+
+    return [
+        'porcentaje' => $porcentaje,
+        'color'      => $color,
+        'clase'      => $clase,
+        'texto'      => $texto,
+    ];
+}
+
 function modulos_disponibles($pdo): array
 {
     return $pdo->query('SELECT id_modulo, clave, nombre FROM modulos ORDER BY id_modulo')->fetchAll();
