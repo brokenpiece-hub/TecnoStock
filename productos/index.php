@@ -25,7 +25,7 @@ if (!in_array($estado, ['1', '0'], true)) {
     $estado = '1';
 }
 
-/* La pestaÃ±a de critico es activos + solo stock bajo. */
+/* La pestaña de critico es activos + solo stock bajo. */
 $tabActiva = 'activos';
 if ($estado === '1' && $stockCritico === '1') {
     $tabActiva = 'critico';
@@ -33,7 +33,7 @@ if ($estado === '1' && $stockCritico === '1') {
     $tabActiva = 'inactivos';
 }
 
-/* Conteos para las pestaÃ±as: no borra ni oculta productos, solo los separa. */
+/* Conteos para las pestañas: no borra ni oculta productos, solo los separa. */
 $conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
 $totalActivos = 0;
 $totalInactivos = 0;
@@ -67,7 +67,7 @@ if (!in_array($direccion, ['asc', 'desc'], true)) {
     $direccion = 'asc';
 }
 
-/* Los filtros se comparten entre pestaÃ±as y columnas para no perderlos. */
+/* Los filtros se comparten entre pestañas y columnas para no perderlos. */
 $filtros = ['estado' => $estado];
 foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca, 'stock_critico' => $stockCritico] as $clave => $valor) {
     if ($valor !== null && $valor !== '') {
@@ -140,13 +140,6 @@ $productos = $stmt->fetchAll();
 
 $categorias = $pdo->query('SELECT id_categoria, nombre FROM categorias ORDER BY nombre')->fetchAll();
 
-$mensajes = [
-    'creado'      => 'Producto creado correctamente.',
-    'editado'     => 'Producto actualizado correctamente.',
-    'desactivado' => 'Producto desactivado.',
-    'activado'    => 'Producto activado.',
-];
-$mensaje = isset($_GET['msg']) && isset($mensajes[$_GET['msg']]) ? $mensajes[$_GET['msg']] : '';
 $titulo = 'TecnoStock - Productos';
 $base = '../';
 $pagina = 'productos';
@@ -154,10 +147,6 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1>Productos</h1>
-
-<?php if ($mensaje !== ''): ?>
-    <p class="mensaje"><?= e($mensaje) ?></p>
-<?php endif; ?>
 
 <nav class="tabs" aria-label="Estado de los productos">
     <a class="tab <?= $tabActiva === 'activos' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
@@ -228,8 +217,10 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="vista-productos" data-vista-productos data-acciones data-vista="lista">
     <?php if (empty($productos)): ?>
-        <?php if ($estado === '0'): ?>
+        <?php if ($tabActiva === 'inactivos'): ?>
             <p class="vacio">No hay productos inactivos. Los productos que desactives se guardan aqui.</p>
+        <?php elseif ($tabActiva === 'critico'): ?>
+            <p class="vacio">No hay productos activos con stock crítico con estos filtros.</p>
         <?php else: ?>
             <p class="vacio">No hay productos activos con estos filtros. <a href="crear.php">Crear el primero</a>.</p>
         <?php endif; ?>

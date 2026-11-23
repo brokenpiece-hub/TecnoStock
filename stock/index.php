@@ -12,9 +12,21 @@ requerir_permiso('stock', '../');
 $q = trim($_GET['q'] ?? '');
 $idCategoria = entero_no_negativo($_GET['id_categoria'] ?? null);
 $marca = trim($_GET['marca'] ?? '');
+$stockCritico = $_GET['stock_critico'] ?? '';
+if (!in_array($stockCritico, ['1', '0'], true)) {
+    $stockCritico = '';
+}
 $estado = $_GET['estado'] ?? '1';
 if (!in_array($estado, ['1', '0'], true)) {
     $estado = '1';
+}
+
+/* La pestaña de critico es activos + solo stock bajo. */
+$tabActiva = 'activos';
+if ($estado === '1' && $stockCritico === '1') {
+    $tabActiva = 'critico';
+} elseif ($estado === '0') {
+    $tabActiva = 'inactivos';
 }
 
 /* Columnas ordenables de la tabla de existencias. */
@@ -36,7 +48,7 @@ if (!in_array($direccion, ['asc', 'desc'], true)) {
     $direccion = 'asc';
 }
 
-/* Conteos para las pestaÃ±as, sin modificar los productos. */
+/* Conteos para las pestañas, sin modificar los productos. */
 $conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
 $totalActivos = 0;
 $totalInactivos = 0;
@@ -47,10 +59,13 @@ foreach ($conteos as $conteo) {
         $totalInactivos = (int) $conteo['total'];
     }
 }
+$totalCritico = (int) $pdo->query(
+    'SELECT COUNT(*) FROM productos WHERE estado = 1 AND stock_actual < stock_minimo'
+)->fetchColumn();
 
-/* Filtros compartidos entre pestaÃ±as y columnas. */
+/* Filtros compartidos entre pestañas y columnas. */
 $filtros = ['estado' => $estado];
-foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca] as $clave => $valor) {
+foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca, 'stock_critico' => $stockCritico] as $clave => $valor) {
     if ($valor !== '') {
         $filtros[$clave] = $valor;
     }
@@ -62,9 +77,17 @@ if ($orden !== '') {
 
 $filtrosActivos = $filtros;
 $filtrosActivos['estado'] = '1';
+unset($filtrosActivos['stock_critico']);
 $urlActivos = 'index.php?' . http_build_query($filtrosActivos);
+
+$filtrosCriticos = $filtros;
+$filtrosCriticos['estado'] = '1';
+$filtrosCriticos['stock_critico'] = '1';
+$urlCriticos = 'index.php?' . http_build_query($filtrosCriticos);
+
 $filtrosInactivos = $filtros;
 $filtrosInactivos['estado'] = '0';
+unset($filtrosInactivos['stock_critico']);
 $urlInactivos = 'index.php?' . http_build_query($filtrosInactivos);
 
 $sql = 'SELECT p.codigo, p.nombre, p.imagen, p.marca, c.nombre AS categoria,
@@ -91,6 +114,11 @@ if ($idCategoria !== null && $idCategoria > 0) {
 if ($marca !== '') {
     $condiciones[] = 'p.marca LIKE :marca';
     $parametros[':marca'] = '%' . $marca . '%';
+}
+if ($stockCritico === '1') {
+    $condiciones[] = 'p.stock_actual < p.stock_minimo';
+} elseif ($stockCritico === '0') {
+    $condiciones[] = 'p.stock_actual >= p.stock_minimo';
 }
 if (!empty($condiciones)) {
     $sql .= ' WHERE ' . implode(' AND ', $condiciones);
@@ -125,12 +153,16 @@ require __DIR__ . '/../includes/header.php';
 <p>Vista de solo lectura. Las cantidades se actualizan con entradas, salidas y ventas. Si editaste un producto, presiona <strong>Actualizar</strong> para ver los cambios.</p>
 
 <nav class="tabs" aria-label="Estado de los productos">
-    <a class="tab <?= $estado === '1' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
-       <?= $estado === '1' ? 'aria-current="page"' : '' ?>>
+    <a class="tab <?= $tabActiva === 'activos' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
+       <?= $tabActiva === 'activos' ? 'aria-current="page"' : '' ?>>
         Activos <span class="tab-num"><?= $totalActivos ?></span>
     </a>
-    <a class="tab <?= $estado === '0' ? 'activo' : '' ?>" href="<?= e($urlInactivos) ?>"
-       <?= $estado === '0' ? 'aria-current="page"' : '' ?>>
+    <a class="tab tab-critico <?= $tabActiva === 'critico' ? 'activo' : '' ?>" href="<?= e($urlCriticos) ?>"
+       <?= $tabActiva === 'critico' ? 'aria-current="page"' : '' ?>>
+        Stock crítico <span class="tab-num"><?= $totalCritico ?></span>
+    </a>
+    <a class="tab <?= $tabActiva === 'inactivos' ? 'activo' : '' ?>" href="<?= e($urlInactivos) ?>"
+       <?= $tabActiva === 'inactivos' ? 'aria-current="page"' : '' ?>>
         Inactivos <span class="tab-num"><?= $totalInactivos ?></span>
     </a>
 </nav>
@@ -162,6 +194,14 @@ require __DIR__ . '/../includes/header.php';
             <label for="marca">Marca</label>
             <input type="text" id="marca" name="marca" placeholder="Escriba una marca" value="<?= e($marca) ?>">
         </div>
+        <div>
+            <label for="stock_critico">Stock critico</label>
+            <select id="stock_critico" name="stock_critico">
+                <option value="" <?= $stockCritico === '' ? 'selected' : '' ?>>Todos</option>
+                <option value="1" <?= $stockCritico === '1' ? 'selected' : '' ?>>Solo stock critico</option>
+                <option value="0" <?= $stockCritico === '0' ? 'selected' : '' ?>>Sin stock critico</option>
+            </select>
+        </div>
         <div class="filtros-acciones">
             <button type="submit">Buscar</button>
             <a class="btn btn-gris" href="index.php?estado=<?= e($estado) ?>">Limpiar</a>
@@ -181,8 +221,10 @@ require __DIR__ . '/../includes/header.php';
 
     <div class="vista-productos" data-vista-productos data-vista="lista">
     <?php if (empty($productos)): ?>
-        <?php if ($estado === '0'): ?>
+        <?php if ($tabActiva === 'inactivos'): ?>
             <p class="vacio">No hay productos inactivos en Stock. Los productos que desactives aparecen aqui.</p>
+        <?php elseif ($tabActiva === 'critico'): ?>
+            <p class="vacio">No hay productos activos con stock crítico con estos filtros.</p>
         <?php else: ?>
             <p class="vacio">No hay productos activos con estos filtros.</p>
         <?php endif; ?>

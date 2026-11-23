@@ -66,9 +66,6 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
 $ventas = $stmt->fetchAll();
 
-$mensajes = ['creado' => 'Venta registrada. El stock fue descontado correctamente.'];
-$mensaje = isset($_GET['msg']) && isset($mensajes[$_GET['msg']]) ? $mensajes[$_GET['msg']] : '';
-
 $titulo = 'TecnoStock - Ventas';
 $base = '../';
 $pagina = 'ventas';
@@ -76,10 +73,6 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1>Ventas</h1>
-
-<?php if ($mensaje !== ''): ?>
-    <p class="mensaje"><?= e($mensaje) ?></p>
-<?php endif; ?>
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">

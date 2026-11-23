@@ -1,4 +1,4 @@
-/* Modal de producto en Inicio: abre acciones sin salir del modulo. */
+/* Modal de producto en Inicio: abre Editar o Entrada sin salir del modulo. */
 (function () {
     var dialog = document.getElementById('modal-producto');
     if (!dialog || typeof dialog.showModal !== 'function') {
@@ -25,16 +25,12 @@
         var id = encodeURIComponent(fila.dataset.id || '');
         var editar = document.getElementById('modal-editar');
         var entrada = document.getElementById('modal-entrada');
-        var salida = document.getElementById('modal-salida');
 
         if (editar) {
             editar.href = 'productos/editar.php?id=' + id;
         }
         if (entrada) {
             entrada.href = 'movimientos/crear.php?tipo=entrada&producto=' + id;
-        }
-        if (salida) {
-            salida.href = 'movimientos/crear.php?tipo=salida&producto=' + id;
         }
 
         dialog.showModal();

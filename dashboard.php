@@ -8,6 +8,10 @@ require __DIR__ . '/includes/funciones.php';
 
 require_login();
 
+/* Iconos del modal, iguales a los que se usan en las tarjetas de productos. */
+$iconoEditar = '<svg class="icono-accion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>';
+$iconoEntrada = '<svg class="icono-accion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>';
+
 $productos = (int) $pdo->query('SELECT COUNT(*) FROM productos WHERE estado = 1')->fetchColumn();
 $stockBajo = (int) $pdo->query(
     'SELECT COUNT(*) FROM productos WHERE estado = 1 AND stock_actual < stock_minimo'
@@ -229,11 +233,14 @@ require __DIR__ . '/includes/header.php';
         </dl>
         <div class="modal-acciones">
             <?php if (tiene_permiso('productos')): ?>
-                <a id="modal-editar" class="btn btn-acento" href="#">Editar producto</a>
+                <a id="modal-editar" class="btn btn-pequeno" href="#" title="Editar producto" aria-label="Editar producto">
+                    <?= $iconoEditar ?><span class="texto-accion">Editar</span>
+                </a>
             <?php endif; ?>
             <?php if (tiene_permiso('movimientos')): ?>
-                <a id="modal-entrada" class="btn" href="#">Hacer entrada</a>
-                <a id="modal-salida" class="btn btn-gris" href="#">Hacer salida</a>
+                <a id="modal-entrada" class="btn btn-pequeno btn-acento" href="#" title="Hacer entrada" aria-label="Hacer entrada">
+                    <?= $iconoEntrada ?><span class="texto-accion">Entrada</span>
+                </a>
             <?php else: ?>
                 <p class="ayuda">No tienes permiso para registrar movimientos.</p>
             <?php endif; ?>

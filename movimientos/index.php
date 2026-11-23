@@ -77,12 +77,6 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
 $movimientos = $stmt->fetchAll();
 
-$mensajes = [
-    'creado'             => 'Movimiento registrado correctamente.',
-    'creado_con_producto' => 'Producto creado y entrada registrada correctamente.',
-];
-$mensaje = isset($_GET['msg']) && isset($mensajes[$_GET['msg']]) ? $mensajes[$_GET['msg']] : '';
-
 $titulo = 'TecnoStock - Movimientos';
 $base = '../';
 $pagina = 'movimientos';
@@ -90,10 +84,6 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1>Movimientos</h1>
-
-<?php if ($mensaje !== ''): ?>
-    <p class="mensaje"><?= e($mensaje) ?></p>
-<?php endif; ?>
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">

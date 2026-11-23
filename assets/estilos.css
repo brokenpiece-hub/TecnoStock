@@ -425,6 +425,20 @@ a:hover {
     color: #FFFFFF;
 }
 
+.tab-critico .tab-num {
+    background: var(--alerta-suave);
+    color: var(--alerta);
+}
+
+.tab-critico.activo {
+    border-bottom-color: var(--alerta);
+}
+
+.tab-critico.activo .tab-num {
+    background: var(--alerta);
+    color: #07130D;
+}
+
 /* Accion principal al lado de las pestañas */
 .tab-accion {
     align-self: center;
@@ -666,7 +680,7 @@ a:hover {
 .aviso-flotante {
     position: fixed;
     right: 20px;
-    bottom: 20px;
+    top: 20px;
     z-index: 60;
     display: flex;
     align-items: center;
@@ -710,6 +724,67 @@ a:hover {
 
 .aviso-cerrar:hover {
     color: var(--texto);
+}
+
+/* Notificacion flotante de exito en cualquier evento. */
+.notificacion-flotante {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(420px, calc(100vw - 32px));
+    padding: 12px 14px;
+    background: var(--superficie);
+    border: 1px solid var(--exito);
+    border-left: 4px solid var(--exito);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    animation: notificacion-entrar .2s ease-out;
+}
+
+/* Si el aviso de stock tambien esta arriba, la notificacion baja un poco. */
+.aviso-flotante:not([hidden]) ~ .notificacion-flotante {
+    top: 98px;
+}
+
+.notificacion-flotante[hidden] {
+    display: none;
+}
+
+.notificacion-flotante .icono {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    color: var(--exito);
+}
+
+.notificacion-flotante span {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.notificacion-cerrar {
+    flex: 0 0 auto;
+    padding: 2px 6px;
+    border: 0;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.notificacion-cerrar:hover {
+    color: var(--texto);
+}
+
+@keyframes notificacion-entrar {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: none; }
 }
 
 /* Modal de producto en Inicio. */
@@ -798,6 +873,37 @@ a:hover {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+/* Botones circulares del modal, iguales a los de las tarjetas. */
+.modal-acciones .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+    background: var(--campo);
+    color: var(--texto);
+}
+
+.modal-acciones .btn-acento {
+    background: var(--exito);
+    border-color: transparent;
+    color: #07130D;
+}
+
+.modal-acciones .texto-accion {
+    display: none;
+}
+
+.modal-acciones .icono-accion {
+    display: block;
+    width: 16px;
+    height: 16px;
 }
 
 .modal-acciones .ayuda {

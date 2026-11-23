@@ -9,8 +9,14 @@ if (isset($pdo) && function_exists('tiene_permiso') && (tiene_permiso('productos
 }
 
 if ($avisoStockBajo > 0):
-    $destinoAviso = tiene_permiso('productos') ? 'productos/index.php' : 'stock/index.php';
-    $textoBoton = tiene_permiso('productos') ? 'Ver productos' : 'Ver stock';
+    if (($pagina ?? '') === 'stock' && tiene_permiso('stock')) {
+        $destinoAviso = 'stock/index.php?estado=1&stock_critico=1';
+    } elseif (tiene_permiso('productos')) {
+        $destinoAviso = 'productos/index.php?estado=1&stock_critico=1';
+    } else {
+        $destinoAviso = 'stock/index.php?estado=1&stock_critico=1';
+    }
+    $textoBoton = 'Ver stock crítico';
 ?>
 <div class="aviso-flotante" id="aviso-stock" role="status" aria-live="polite">
     <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">

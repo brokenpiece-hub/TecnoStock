@@ -18,13 +18,6 @@ $sql = 'SELECT u.id_usuario, u.nombre, u.correo, u.estado,
 
 $usuarios = $pdo->query($sql)->fetchAll();
 
-$mensajes = [
-    'creado'      => 'Usuario creado correctamente.',
-    'editado'     => 'Usuario actualizado correctamente.',
-    'desactivado' => 'Usuario desactivado correctamente.',
-];
-$mensaje = isset($_GET['msg']) && isset($mensajes[$_GET['msg']]) ? $mensajes[$_GET['msg']] : '';
-
 $titulo = 'TecnoStock - Usuarios';
 $base = '../';
 $pagina = 'usuarios';
@@ -32,10 +25,6 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1>Usuarios</h1>
-
-<?php if ($mensaje !== ''): ?>
-    <p class="mensaje"><?= e($mensaje) ?></p>
-<?php endif; ?>
 
 <div class="card">
     <form class="barra-acciones" method="get" action="index.php">
