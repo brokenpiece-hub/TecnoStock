@@ -27,7 +27,8 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 ## Funcionalidades
 
 - Inicio de sesion con usuario registrado.
-- Dashboard con metricas, alertas de stock bajo, ultimos movimientos y ultimas ventas.
+- Inicio: bienvenida al lado del titulo, accesos rapidos justo debajo, metricas, alertas de stock bajo, ultimos movimientos y ultimas ventas. Al hacer clic en un producto de las alertas se abre una ventana modal con sus datos y, segun los permisos, botones para **Editar**, hacer una **Entrada** o hacer una **Salida**. Los accesos y las acciones del modal respetan los permisos de cada usuario.
+- Aviso flotante de stock bajo: aparece al entrar a **Inicio**, **Productos** o **Stock**. Se puede quitar con la **x**, pero vuelve a mostrarse la siguiente vez que se entre a uno de esos modulos.
 - Productos: registrar, listar, buscar por nombre/codigo/categoria/marca, editar (incluye nombre y codigo), desactivar y activar. El codigo sigue siendo unico: al editar no se puede usar el de otro producto. El listado tiene pestañas **Activos** e **Inactivos**: los productos desactivados se guardan en la pestaña Inactivos y se pueden devolver con el boton **Activar**, sin borrarlos.
 - Marca: se escribe directamente en el formulario, no se elige de una lista.
 - Filtros de productos: por categoria, marca escrita y stock critico; se pueden combinar entre si.

@@ -107,10 +107,6 @@ $productos = $stmt->fetchAll();
 
 $categorias = $pdo->query('SELECT id_categoria, nombre FROM categorias ORDER BY nombre')->fetchAll();
 
-$stockBajo = (int) $pdo->query(
-    'SELECT COUNT(*) FROM productos WHERE estado = 1 AND stock_actual < stock_minimo'
-)->fetchColumn();
-
 $movimientos = $pdo->query(
     'SELECT m.fecha_hora, m.tipo, m.cantidad, m.observacion, p.codigo, p.marca
        FROM movimientos m
@@ -138,15 +134,6 @@ require __DIR__ . '/../includes/header.php';
         Inactivos <span class="tab-num"><?= $totalInactivos ?></span>
     </a>
 </nav>
-
-<?php if ($stockBajo > 0): ?>
-    <div class="alerta-stock" role="status">
-        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="18" r=".5"/>
-        </svg>
-        <span><strong><?= $stockBajo ?> producto(s) con stock bajo.</strong> Avisa al operador si necesitas reponer.</span>
-    </div>
-<?php endif; ?>
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">

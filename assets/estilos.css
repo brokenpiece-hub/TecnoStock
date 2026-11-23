@@ -622,6 +622,188 @@ a:hover {
     }
 }
 
+/* Inicio: titulo con bienvenida y accesos rapidos arriba. */
+.cabecera-inicio {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin-bottom: 20px;
+}
+
+.cabecera-inicio h1 {
+    margin: 0;
+}
+
+.cabecera-inicio p {
+    margin: 0;
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+.accesos-rapidos {
+    margin-bottom: 20px;
+}
+
+.accesos-rapidos h2 {
+    margin-bottom: 10px;
+}
+
+.accesos-rapidos p {
+    margin: 0;
+}
+
+.fila-producto {
+    cursor: pointer;
+}
+
+.fila-producto:focus-visible {
+    outline: 2px solid var(--foco);
+    outline-offset: -2px;
+}
+
+/* Aviso flotante de stock bajo. */
+.aviso-flotante {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(420px, calc(100vw - 32px));
+    padding: 12px 14px;
+    background: var(--superficie);
+    border: 1px solid var(--alerta);
+    border-left: 4px solid var(--alerta);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+}
+
+.aviso-flotante[hidden] {
+    display: none;
+}
+
+.aviso-flotante .icono {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    color: var(--alerta);
+}
+
+.aviso-flotante span {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.aviso-cerrar {
+    flex: 0 0 auto;
+    padding: 2px 6px;
+    border: 0;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.aviso-cerrar:hover {
+    color: var(--texto);
+}
+
+/* Modal de producto en Inicio. */
+.modal-producto {
+    width: min(420px, calc(100vw - 32px));
+    padding: 0;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    background: var(--superficie);
+    color: var(--texto);
+    box-shadow: var(--sombra);
+}
+
+.modal-producto::backdrop {
+    background: rgba(5, 3, 8, .72);
+}
+
+.modal-contenido {
+    position: relative;
+    padding: 22px;
+}
+
+.modal-contenido h2 {
+    margin: 0 34px 14px 0;
+    font-size: 20px;
+}
+
+.modal-cerrar {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    padding: 2px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.modal-cerrar:hover {
+    color: var(--texto);
+}
+
+.modal-foto {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.modal-foto img {
+    display: block;
+    width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: var(--campo);
+}
+
+.modal-foto img[hidden] {
+    display: none;
+}
+
+.modal-datos {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    margin: 0 0 18px;
+    font-size: 14px;
+}
+
+.modal-datos dt {
+    color: var(--texto-suave);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.modal-datos dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.modal-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.modal-acciones .ayuda {
+    margin: 0;
+}
+
 /* Tabla */
 .tabla-scroll {
     max-width: 100%;

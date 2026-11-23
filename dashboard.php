@@ -20,7 +20,7 @@ if (tiene_permiso('usuarios')) {
 }
 
 $alertas = $pdo->query(
-    'SELECT codigo, nombre, stock_actual, stock_minimo
+    'SELECT id_producto, codigo, nombre, imagen, stock_actual, stock_minimo
        FROM productos
       WHERE estado = 1 AND stock_actual < stock_minimo
       ORDER BY codigo
@@ -50,23 +50,34 @@ $pagina = 'inicio';
 require __DIR__ . '/includes/header.php';
 ?>
 
-<h1>Inicio</h1>
-<p>Bienvenido, <strong><?= e($_SESSION['usuario_nombre']) ?></strong></p>
+<div class="cabecera-inicio">
+    <h1>Inicio</h1>
+    <p>Bienvenido a TecnoStock, <strong><?= e($_SESSION['usuario_nombre']) ?></strong></p>
+</div>
 
-<?php if ($stockBajo > 0 && (tiene_permiso('productos') || tiene_permiso('stock'))): ?>
-    <div class="alerta-stock" role="status">
-        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="18" r=".5"/>
-        </svg>
-        <span>
-            <strong><?= $stockBajo ?> producto(s) con stock bajo.</strong>
-            Revisa el inventario antes de registrar una venta.
-        </span>
-        <a class="btn btn-pequeno" href="<?= tiene_permiso('productos') ? 'productos/index.php' : 'stock/index.php' ?>">
-            <?= tiene_permiso('productos') ? 'Ver productos' : 'Ver stock' ?>
-        </a>
-    </div>
-<?php endif; ?>
+<div class="card accesos-rapidos">
+    <h2>Accesos rapidos</h2>
+    <p>
+        <?php if (tiene_permiso('productos')): ?>
+            <a class="btn" href="productos/index.php">Ver productos</a>
+            <a class="btn btn-acento" href="productos/crear.php">Nuevo producto</a>
+        <?php endif; ?>
+        <?php if (tiene_permiso('movimientos')): ?>
+            <a class="btn" href="movimientos/index.php">Movimientos</a>
+            <a class="btn btn-acento" href="movimientos/crear.php">Nuevo movimiento</a>
+        <?php endif; ?>
+        <?php if (tiene_permiso('stock')): ?>
+            <a class="btn" href="stock/index.php">Stock</a>
+        <?php endif; ?>
+        <?php if (tiene_permiso('ventas')): ?>
+            <a class="btn" href="ventas/index.php">Ventas</a>
+            <a class="btn btn-acento" href="ventas/crear.php">Nueva venta</a>
+        <?php endif; ?>
+        <?php if (tiene_permiso('usuarios')): ?>
+            <a class="btn" href="usuarios/index.php">Usuarios y permisos</a>
+        <?php endif; ?>
+    </p>
+</div>
 
 <div class="metricas">
     <div class="metrica">
@@ -95,7 +106,7 @@ require __DIR__ . '/includes/header.php';
 
 <?php if (tiene_permiso('productos') || tiene_permiso('stock')): ?>
     <div class="card">
-        <h2>Alertas de stock <small><?= $stockBajo ?> productos bajo el minimo</small></h2>
+        <h2>Alertas de stock <small><?= $stockBajo ?> productos bajo el minimo. Haz clic en uno para ver opciones.</small></h2>
         <?php if (empty($alertas)): ?>
             <p class="mensaje">Todos los productos tienen stock suficiente.</p>
         <?php else: ?>
@@ -111,7 +122,13 @@ require __DIR__ . '/includes/header.php';
                 </thead>
                 <tbody>
                 <?php foreach ($alertas as $fila): ?>
-                    <tr>
+                    <tr class="fila-producto" tabindex="0" role="button" title="Ver acciones del producto"
+                        data-id="<?= (int) $fila['id_producto'] ?>"
+                        data-codigo="<?= e($fila['codigo']) ?>"
+                        data-nombre="<?= e($fila['nombre']) ?>"
+                        data-stock="<?= (int) $fila['stock_actual'] ?>"
+                        data-minimo="<?= (int) $fila['stock_minimo'] ?>"
+                        data-imagen="<?= e(ruta_imagen($fila['imagen'], '')) ?>">
                         <td><?= e($fila['codigo']) ?></td>
                         <td><?= e($fila['nombre']) ?></td>
                         <td><span class="badge badge-rojo"><?= (int) $fila['stock_actual'] ?></span></td>
@@ -195,28 +212,33 @@ require __DIR__ . '/includes/header.php';
     <?php endif; ?>
 </div>
 
-<div class="card">
-    <h2>Accesos rapidos</h2>
-    <p>
-        <?php if (tiene_permiso('productos')): ?>
-            <a class="btn" href="productos/index.php">Ver productos</a>
-            <a class="btn btn-acento" href="productos/crear.php">Nuevo producto</a>
-        <?php endif; ?>
-        <?php if (tiene_permiso('movimientos')): ?>
-            <a class="btn" href="movimientos/index.php">Movimientos</a>
-            <a class="btn btn-acento" href="movimientos/crear.php">Nuevo movimiento</a>
-        <?php endif; ?>
-        <?php if (tiene_permiso('stock')): ?>
-            <a class="btn" href="stock/index.php">Stock</a>
-        <?php endif; ?>
-        <?php if (tiene_permiso('ventas')): ?>
-            <a class="btn" href="ventas/index.php">Ventas</a>
-            <a class="btn btn-acento" href="ventas/crear.php">Nueva venta</a>
-        <?php endif; ?>
-        <?php if (tiene_permiso('usuarios')): ?>
-            <a class="btn" href="usuarios/index.php">Usuarios y permisos</a>
-        <?php endif; ?>
-    </p>
-</div>
+<dialog id="modal-producto" class="modal-producto" aria-labelledby="modal-nombre">
+    <div class="modal-contenido">
+        <button type="button" class="modal-cerrar" aria-label="Cerrar ventana">×</button>
+        <h2 id="modal-nombre">Producto</h2>
+        <div class="modal-foto">
+            <img id="modal-imagen" alt="Imagen del producto" hidden>
+        </div>
+        <dl class="modal-datos">
+            <dt>Codigo</dt>
+            <dd id="modal-codigo"></dd>
+            <dt>Stock actual</dt>
+            <dd id="modal-stock"></dd>
+            <dt>Stock minimo</dt>
+            <dd id="modal-minimo"></dd>
+        </dl>
+        <div class="modal-acciones">
+            <?php if (tiene_permiso('productos')): ?>
+                <a id="modal-editar" class="btn btn-acento" href="#">Editar producto</a>
+            <?php endif; ?>
+            <?php if (tiene_permiso('movimientos')): ?>
+                <a id="modal-entrada" class="btn" href="#">Hacer entrada</a>
+                <a id="modal-salida" class="btn btn-gris" href="#">Hacer salida</a>
+            <?php else: ?>
+                <p class="ayuda">No tienes permiso para registrar movimientos.</p>
+            <?php endif; ?>
+        </div>
+    </div>
+</dialog>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

@@ -25,6 +25,14 @@ if (!in_array($estado, ['1', '0'], true)) {
     $estado = '1';
 }
 
+/* La pestaÃ±a de critico es activos + solo stock bajo. */
+$tabActiva = 'activos';
+if ($estado === '1' && $stockCritico === '1') {
+    $tabActiva = 'critico';
+} elseif ($estado === '0') {
+    $tabActiva = 'inactivos';
+}
+
 /* Conteos para las pestaÃ±as: no borra ni oculta productos, solo los separa. */
 $conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
 $totalActivos = 0;
@@ -36,6 +44,9 @@ foreach ($conteos as $conteo) {
         $totalInactivos = (int) $conteo['total'];
     }
 }
+$totalCritico = (int) $pdo->query(
+    'SELECT COUNT(*) FROM productos WHERE estado = 1 AND stock_actual < stock_minimo'
+)->fetchColumn();
 
 /* Columnas que se pueden ordenar y su equivalente en la consulta. */
 $ordenes = [
@@ -70,9 +81,17 @@ if ($orden !== '') {
 
 $filtrosActivos = $filtros;
 $filtrosActivos['estado'] = '1';
+unset($filtrosActivos['stock_critico']);
 $urlActivos = 'index.php?' . http_build_query($filtrosActivos);
+
+$filtrosCriticos = $filtros;
+$filtrosCriticos['estado'] = '1';
+$filtrosCriticos['stock_critico'] = '1';
+$urlCriticos = 'index.php?' . http_build_query($filtrosCriticos);
+
 $filtrosInactivos = $filtros;
 $filtrosInactivos['estado'] = '0';
+unset($filtrosInactivos['stock_critico']);
 $urlInactivos = 'index.php?' . http_build_query($filtrosInactivos);
 
 $sql = 'SELECT p.id_producto, p.codigo, p.nombre, p.imagen,
@@ -141,12 +160,16 @@ require __DIR__ . '/../includes/header.php';
 <?php endif; ?>
 
 <nav class="tabs" aria-label="Estado de los productos">
-    <a class="tab <?= $estado === '1' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
-       <?= $estado === '1' ? 'aria-current="page"' : '' ?>>
+    <a class="tab <?= $tabActiva === 'activos' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
+       <?= $tabActiva === 'activos' ? 'aria-current="page"' : '' ?>>
         Activos <span class="tab-num"><?= $totalActivos ?></span>
     </a>
-    <a class="tab <?= $estado === '0' ? 'activo' : '' ?>" href="<?= e($urlInactivos) ?>"
-       <?= $estado === '0' ? 'aria-current="page"' : '' ?>>
+    <a class="tab tab-critico <?= $tabActiva === 'critico' ? 'activo' : '' ?>" href="<?= e($urlCriticos) ?>"
+       <?= $tabActiva === 'critico' ? 'aria-current="page"' : '' ?>>
+        Stock crítico <span class="tab-num"><?= $totalCritico ?></span>
+    </a>
+    <a class="tab <?= $tabActiva === 'inactivos' ? 'activo' : '' ?>" href="<?= e($urlInactivos) ?>"
+       <?= $tabActiva === 'inactivos' ? 'aria-current="page"' : '' ?>>
         Inactivos <span class="tab-num"><?= $totalInactivos ?></span>
     </a>
     <a class="btn btn-acento btn-pequeno tab-accion" href="crear.php">Nuevo producto</a>

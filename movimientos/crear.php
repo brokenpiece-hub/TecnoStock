@@ -37,6 +37,23 @@ $datos = [
     'stock_minimo'   => '0',
 ];
 
+/* Viene del modal de Inicio: deja listo el tipo y el producto elegido. */
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $tipoInicial = $_GET['tipo'] ?? '';
+    if (in_array($tipoInicial, ['entrada', 'salida'], true)) {
+        $datos['tipo'] = $tipoInicial;
+    }
+
+    $idInicial = entero_no_negativo($_GET['producto'] ?? null);
+    if ($idInicial !== null) {
+        $stmt = $pdo->prepare('SELECT 1 FROM productos WHERE id_producto = :id AND estado = 1');
+        $stmt->execute([':id' => $idInicial]);
+        if ($stmt->fetchColumn()) {
+            $datos['id_producto'] = (string) $idInicial;
+        }
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach (array_keys($datos) as $clave) {
         $datos[$clave] = trim($_POST[$clave] ?? '');
