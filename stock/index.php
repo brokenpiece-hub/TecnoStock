@@ -10,6 +10,32 @@ requerir_permiso('stock', '../');
 
 $q = trim($_GET['q'] ?? '');
 $marca = trim($_GET['marca'] ?? '');
+$estado = $_GET['estado'] ?? '1';
+if (!in_array($estado, ['1', '0'], true)) {
+    $estado = '1';
+}
+
+/* Conteos para las pestañas, sin modificar los productos. */
+$conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
+$totalActivos = 0;
+$totalInactivos = 0;
+foreach ($conteos as $conteo) {
+    if ((int) $conteo['estado'] === 1) {
+        $totalActivos = (int) $conteo['total'];
+    } else {
+        $totalInactivos = (int) $conteo['total'];
+    }
+}
+
+$filtrosTab = ['estado' => '1'];
+foreach (['q' => $q, 'marca' => $marca] as $clave => $valor) {
+    if ($valor !== '') {
+        $filtrosTab[$clave] = $valor;
+    }
+}
+$urlActivos = 'index.php?' . http_build_query($filtrosTab);
+$filtrosTab['estado'] = '0';
+$urlInactivos = 'index.php?' . http_build_query($filtrosTab);
 
 $sql = 'SELECT p.codigo, p.nombre, p.imagen, p.marca, c.nombre AS categoria,
                p.stock_actual, p.stock_minimo, p.estado,
@@ -18,8 +44,8 @@ $sql = 'SELECT p.codigo, p.nombre, p.imagen, p.marca, c.nombre AS categoria,
           FROM productos p
           JOIN categorias c ON c.id_categoria = p.id_categoria';
 
-$condiciones = [];
-$parametros = [];
+$condiciones = ['p.estado = :estado'];
+$parametros = [':estado' => $estado];
 if ($q !== '') {
     $condiciones[] = '(p.codigo LIKE :q1 OR p.nombre LIKE :q2 OR c.nombre LIKE :q3 OR p.marca LIKE :q4)';
     $busqueda = '%' . $q . '%';
@@ -64,6 +90,17 @@ require __DIR__ . '/../includes/header.php';
 <h1>Stock</h1>
 <p>Vista de solo lectura. Las cantidades se actualizan con entradas, salidas y ventas. Si editaste un producto, presiona <strong>Actualizar</strong> para ver los cambios.</p>
 
+<nav class="tabs" aria-label="Estado de los productos">
+    <a class="tab <?= $estado === '1' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
+       <?= $estado === '1' ? 'aria-current="page"' : '' ?>>
+        Activos <span class="tab-num"><?= $totalActivos ?></span>
+    </a>
+    <a class="tab <?= $estado === '0' ? 'activo' : '' ?>" href="<?= e($urlInactivos) ?>"
+       <?= $estado === '0' ? 'aria-current="page"' : '' ?>>
+        Inactivos <span class="tab-num"><?= $totalInactivos ?></span>
+    </a>
+</nav>
+
 <?php if ($stockBajo > 0): ?>
     <div class="alerta-stock" role="status">
         <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -75,6 +112,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">
+        <input type="hidden" name="estado" value="<?= e($estado) ?>">
         <div>
             <label for="q">Buscar</label>
             <input type="text" id="q" name="q" placeholder="Nombre, codigo, categoria o marca" value="<?= e($q) ?>">
@@ -85,7 +123,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="filtros-acciones">
             <button type="submit">Buscar</button>
-            <a class="btn btn-gris" href="index.php">Limpiar</a>
+            <a class="btn btn-gris" href="index.php?estado=<?= e($estado) ?>">Limpiar</a>
             <button type="button" class="btn btn-acento" onclick="location.reload()">Actualizar</button>
         </div>
     </form>
@@ -95,7 +133,11 @@ require __DIR__ . '/../includes/header.php';
     <h2>Existencias <small>Total: <?= count($productos) ?></small></h2>
 
     <?php if (empty($productos)): ?>
-        <p class="vacio">No hay productos para mostrar.</p>
+        <?php if ($estado === '0'): ?>
+            <p class="vacio">No hay productos inactivos en Stock. Los productos que desactives aparecen aqui.</p>
+        <?php else: ?>
+            <p class="vacio">No hay productos activos con estos filtros.</p>
+        <?php endif; ?>
     <?php else: ?>
         <div class="tabla-scroll">
         <table>

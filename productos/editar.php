@@ -31,6 +31,8 @@ $imagenActual = $producto['imagen'];
 
 $errores = [];
 $datos = [
+    'codigo'       => $producto['codigo'],
+    'nombre'       => $producto['nombre'],
     'descripcion'  => $producto['descripcion'] ?? '',
     'precio'       => number_format((float) $producto['precio'], 2, '.', ''),
     'moneda'       => $producto['moneda'],
@@ -43,6 +45,22 @@ $datos = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach (array_keys($datos) as $clave) {
         $datos[$clave] = trim($_POST[$clave] ?? '');
+    }
+
+    $codigo = strtoupper($datos['codigo']);
+    $datos['codigo'] = $codigo;
+    if (!preg_match('/^[A-Z0-9_-]{3,30}$/', $codigo)) {
+        $errores[] = 'El codigo debe tener entre 3 y 30 caracteres (letras, numeros, guion o guion bajo).';
+    } else {
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM productos WHERE codigo = :codigo AND id_producto <> :id');
+        $stmt->execute([':codigo' => $codigo, ':id' => $id]);
+        if ((int) $stmt->fetchColumn() > 0) {
+            $errores[] = 'Ese codigo ya esta registrado.';
+        }
+    }
+
+    if (strlen($datos['nombre']) < 2 || strlen($datos['nombre']) > 120) {
+        $errores[] = 'El nombre debe tener entre 2 y 120 caracteres.';
     }
 
     $idCategoria = entero_no_negativo($datos['id_categoria']);
@@ -98,7 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $update = $pdo->prepare(
             'UPDATE productos
-                SET descripcion = :descripcion,
+                SET codigo = :codigo,
+                    nombre = :nombre,
+                    descripcion = :descripcion,
                     precio = :precio,
                     moneda = :moneda,
                     stock_actual = :stock_actual,
@@ -109,6 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               WHERE id_producto = :id'
         );
         $update->execute([
+            ':codigo'       => $codigo,
+            ':nombre'       => $datos['nombre'],
             ':descripcion'  => $datos['descripcion'],
             ':precio'       => $precio,
             ':moneda'       => $datos['moneda'],
@@ -144,12 +166,19 @@ require __DIR__ . '/../includes/header.php';
         </ul>
     <?php endif; ?>
 
-    <p><strong><?= e($producto['codigo']) ?></strong> - <?= e($producto['nombre']) ?></p>
-
     <form method="post" action="editar.php?id=<?= $id ?>" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?= $id ?>">
 
         <div class="form-grid">
+            <div>
+                <label for="codigo">Codigo</label>
+                <input type="text" id="codigo" name="codigo" required value="<?= e($datos['codigo']) ?>">
+                <small class="ayuda">De 3 a 30 caracteres: letras, numeros, guion o guion bajo. No se puede repetir.</small>
+            </div>
+            <div>
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" required value="<?= e($datos['nombre']) ?>">
+            </div>
             <div>
                 <label for="descripcion">Descripcion</label>
                 <input type="text" id="descripcion" name="descripcion" value="<?= e($datos['descripcion']) ?>">
@@ -197,7 +226,7 @@ require __DIR__ . '/../includes/header.php';
                 <?php if ($imagenActual !== null && $imagenActual !== ''): ?>
                     <p>
                         <img class="miniatura" src="<?= e(ruta_imagen($imagenActual, '../')) ?>"
-                             alt="Imagen actual de <?= e($producto['nombre']) ?>" width="56" height="56">
+                             alt="Imagen actual de <?= e($datos['nombre']) ?>" width="56" height="56">
                     </p>
                     <label class="check">
                         <input type="checkbox" name="quitar_imagen" value="1"> Quitar imagen actual

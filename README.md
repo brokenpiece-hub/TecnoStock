@@ -28,13 +28,13 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 
 - Inicio de sesion con usuario registrado.
 - Dashboard con metricas, alertas de stock bajo, ultimos movimientos y ultimas ventas.
-- Productos: registrar, listar, buscar por nombre/codigo/categoria/marca, editar y desactivar.
+- Productos: registrar, listar, buscar por nombre/codigo/categoria/marca, editar (incluye nombre y codigo), desactivar y activar. El codigo sigue siendo unico: al editar no se puede usar el de otro producto. El listado tiene pestañas **Activos** e **Inactivos**: los productos desactivados se guardan en la pestaña Inactivos y se pueden devolver con el boton **Activar**, sin borrarlos.
 - Marca: se escribe directamente en el formulario, no se elige de una lista.
 - Filtros de productos: por categoria, marca escrita y stock critico; se pueden combinar entre si.
 - Imagenes: subir JPG, PNG o WEBP (maximo 2 MB) al crear o editar un producto; tambien se pueden reemplazar o quitar.
 - Movimientos: registrar entradas y salidas.
 - Ventas: registrar venta con descuento de stock y movimiento automatico.
-- Stock: vista de solo lectura con existencias, alertas y ultimos movimientos. Muestra la marca, permite filtrar por texto y marca y tiene un boton **Actualizar** para traer los cambios hechos en Productos. No tiene botones de edicion.
+- Stock: vista de solo lectura con existencias, alertas y ultimos movimientos. Muestra la marca, permite filtrar por texto y marca y tiene un boton **Actualizar** para traer los cambios hechos en Productos. Tambien tiene pestañas **Activos** e **Inactivos** para separar los productos sin eliminarlos. No tiene botones de edicion.
 - Usuarios: crear, editar, desactivar y asignar permisos por modulo.
 - Diseno: paleta oscura violeta inspirada en HBO Max, con modo claro y oscuro. El boton del encabezado cambia el tema y el navegador recuerda la eleccion.
 
@@ -50,6 +50,7 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - Las imagenes se guardan en `assets/img/productos/`; en la BD solo se guarda el nombre del archivo.
 - El modulo Stock solo muestra datos: no permite crear, editar ni desactivar productos.
 - Los productos con movimientos se desactivan, no se eliminan.
+- Desactivar un producto solo cambia su estado: sigue en la BD y aparece en la pestaña Inactivos de Productos y Stock. Activar lo devuelve a la pestaña Activos.
 
 ## Pruebas
 
@@ -66,5 +67,6 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - Subida, reemplazo y eliminacion de imagen; archivos invalidos o mayores a 2 MB (rechazados).
 - Vendedor ve Ventas y Stock, no ve Productos y recibe 403 si abre `productos/` por URL.
 - Editar un producto y actualizar Stock: el nuevo stock y la nueva marca aparecen en el modulo Stock.
+- Pestañas Activos/Inactivos en Productos y Stock: los filtros se conservan al cambiar de pestaña y desactivar o activar no borra productos.
 - Creacion y edicion de usuarios con distintos permisos.
 - Cambio de tema claro/oscuro y persistencia despues de recargar la pagina.

@@ -15,6 +15,33 @@ $stockCritico = $_GET['stock_critico'] ?? '';
 if (!in_array($stockCritico, ['1', '0'], true)) {
     $stockCritico = '';
 }
+$estado = $_GET['estado'] ?? '1';
+if (!in_array($estado, ['1', '0'], true)) {
+    $estado = '1';
+}
+
+/* Conteos para las pestañas: no borra ni oculta productos, solo los separa. */
+$conteos = $pdo->query('SELECT estado, COUNT(*) AS total FROM productos GROUP BY estado')->fetchAll();
+$totalActivos = 0;
+$totalInactivos = 0;
+foreach ($conteos as $conteo) {
+    if ((int) $conteo['estado'] === 1) {
+        $totalActivos = (int) $conteo['total'];
+    } else {
+        $totalInactivos = (int) $conteo['total'];
+    }
+}
+
+/* Las pestañas conservan los filtros que tenga puestos el usuario. */
+$filtrosTab = ['estado' => '1'];
+foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca, 'stock_critico' => $stockCritico] as $clave => $valor) {
+    if ($valor !== null && $valor !== '') {
+        $filtrosTab[$clave] = $valor;
+    }
+}
+$urlActivos = 'index.php?' . http_build_query($filtrosTab);
+$filtrosTab['estado'] = '0';
+$urlInactivos = 'index.php?' . http_build_query($filtrosTab);
 
 $sql = 'SELECT p.id_producto, p.codigo, p.nombre, p.imagen,
                c.nombre AS categoria, p.marca,
@@ -22,8 +49,8 @@ $sql = 'SELECT p.id_producto, p.codigo, p.nombre, p.imagen,
           FROM productos p
           JOIN categorias c ON c.id_categoria = p.id_categoria';
 
-$condiciones = [];
-$parametros = [];
+$condiciones = ['p.estado = :estado'];
+$parametros = [':estado' => $estado];
 
 if ($q !== '') {
     $condiciones[] = '(p.codigo LIKE :q1 OR p.nombre LIKE :q2 OR c.nombre LIKE :q3 OR p.marca LIKE :q4)';
@@ -64,6 +91,7 @@ $mensajes = [
     'creado'      => 'Producto creado correctamente.',
     'editado'     => 'Producto actualizado correctamente.',
     'desactivado' => 'Producto desactivado.',
+    'activado'    => 'Producto activado.',
 ];
 $mensaje = isset($_GET['msg']) && isset($mensajes[$_GET['msg']]) ? $mensajes[$_GET['msg']] : '';
 $titulo = 'TecnoStock - Productos';
@@ -78,8 +106,20 @@ require __DIR__ . '/../includes/header.php';
     <p class="mensaje"><?= e($mensaje) ?></p>
 <?php endif; ?>
 
+<nav class="tabs" aria-label="Estado de los productos">
+    <a class="tab <?= $estado === '1' ? 'activo' : '' ?>" href="<?= e($urlActivos) ?>"
+       <?= $estado === '1' ? 'aria-current="page"' : '' ?>>
+        Activos <span class="tab-num"><?= $totalActivos ?></span>
+    </a>
+    <a class="tab <?= $estado === '0' ? 'activo' : '' ?>" href="<?= e($urlInactivos) ?>"
+       <?= $estado === '0' ? 'aria-current="page"' : '' ?>>
+        Inactivos <span class="tab-num"><?= $totalInactivos ?></span>
+    </a>
+</nav>
+
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">
+        <input type="hidden" name="estado" value="<?= e($estado) ?>">
         <div>
             <label for="q">Buscar</label>
             <input type="text" id="q" name="q" placeholder="Nombre, codigo, categoria o marca" value="<?= e($q) ?>">
@@ -110,7 +150,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="filtros-acciones">
             <button type="submit">Buscar</button>
-            <a class="btn btn-gris" href="index.php">Limpiar</a>
+            <a class="btn btn-gris" href="index.php?estado=<?= e($estado) ?>">Limpiar</a>
             <a class="btn btn-acento" href="crear.php">Nuevo producto</a>
         </div>
     </form>
@@ -120,7 +160,11 @@ require __DIR__ . '/../includes/header.php';
     <h2>Listado <small>Total: <?= count($productos) ?></small></h2>
 
     <?php if (empty($productos)): ?>
-        <p class="vacio">No hay productos para mostrar con estos filtros. <a href="crear.php">Crear el primero</a>.</p>
+        <?php if ($estado === '0'): ?>
+            <p class="vacio">No hay productos inactivos. Los productos que desactives se guardan aqui.</p>
+        <?php else: ?>
+            <p class="vacio">No hay productos activos con estos filtros. <a href="crear.php">Crear el primero</a>.</p>
+        <?php endif; ?>
     <?php else: ?>
     <div class="tabla-scroll">
     <table>
@@ -183,6 +227,12 @@ require __DIR__ . '/../includes/header.php';
                               onsubmit="return confirm('Desactivar este producto?');">
                             <input type="hidden" name="id" value="<?= (int) $fila['id_producto'] ?>">
                             <button class="btn btn-gris btn-pequeno" type="submit">Desactivar</button>
+                        </form>
+                    <?php else: ?>
+                        <form method="post" action="activar.php"
+                              onsubmit="return confirm('Activar este producto?');">
+                            <input type="hidden" name="id" value="<?= (int) $fila['id_producto'] ?>">
+                            <button class="btn btn-acento btn-pequeno" type="submit">Activar</button>
                         </form>
                     <?php endif; ?>
                 </td>
