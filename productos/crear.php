@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $titulo = 'TecnoStock - Nuevo producto';
 $base = '../';
-$pagina = 'nuevo';
+$pagina = 'productos';
 require __DIR__ . '/../includes/header.php';
 ?>
 

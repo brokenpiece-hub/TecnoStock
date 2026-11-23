@@ -5,6 +5,7 @@ session_start();
 require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
+require __DIR__ . '/../includes/ordenamiento.php';
 
 requerir_permiso('productos', '../');
 
@@ -32,16 +33,43 @@ foreach ($conteos as $conteo) {
     }
 }
 
-/* Las pestañas conservan los filtros que tenga puestos el usuario. */
-$filtrosTab = ['estado' => '1'];
+/* Columnas que se pueden ordenar y su equivalente en la consulta. */
+$ordenes = [
+    'codigo'       => 'CAST(SUBSTRING_INDEX(p.codigo, "-", -1) AS UNSIGNED)',
+    'nombre'       => 'p.nombre',
+    'categoria'    => 'c.nombre',
+    'marca'        => 'p.marca',
+    'precio'       => 'p.precio',
+    'stock_actual' => 'p.stock_actual',
+    'stock_minimo' => 'p.stock_minimo',
+];
+$orden = $_GET['orden'] ?? '';
+if (!isset($ordenes[$orden])) {
+    $orden = '';
+}
+$direccion = $_GET['direccion'] ?? 'asc';
+if (!in_array($direccion, ['asc', 'desc'], true)) {
+    $direccion = 'asc';
+}
+
+/* Los filtros se comparten entre pestañas y columnas para no perderlos. */
+$filtros = ['estado' => $estado];
 foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca, 'stock_critico' => $stockCritico] as $clave => $valor) {
     if ($valor !== null && $valor !== '') {
-        $filtrosTab[$clave] = $valor;
+        $filtros[$clave] = $valor;
     }
 }
-$urlActivos = 'index.php?' . http_build_query($filtrosTab);
-$filtrosTab['estado'] = '0';
-$urlInactivos = 'index.php?' . http_build_query($filtrosTab);
+if ($orden !== '') {
+    $filtros['orden'] = $orden;
+    $filtros['direccion'] = $direccion;
+}
+
+$filtrosActivos = $filtros;
+$filtrosActivos['estado'] = '1';
+$urlActivos = 'index.php?' . http_build_query($filtrosActivos);
+$filtrosInactivos = $filtros;
+$filtrosInactivos['estado'] = '0';
+$urlInactivos = 'index.php?' . http_build_query($filtrosInactivos);
 
 $sql = 'SELECT p.id_producto, p.codigo, p.nombre, p.imagen,
                c.nombre AS categoria, p.marca,
@@ -77,7 +105,11 @@ if ($stockCritico === '1') {
 if (!empty($condiciones)) {
     $sql .= ' WHERE ' . implode(' AND ', $condiciones);
 }
-$sql .= ' ORDER BY p.id_producto';
+if ($orden !== '') {
+    $sql .= ' ORDER BY ' . $ordenes[$orden] . ' ' . strtoupper($direccion) . ', p.id_producto ASC';
+} else {
+    $sql .= ' ORDER BY p.id_producto';
+}
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
@@ -119,6 +151,10 @@ require __DIR__ . '/../includes/header.php';
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">
         <input type="hidden" name="estado" value="<?= e($estado) ?>">
+        <?php if ($orden !== ''): ?>
+            <input type="hidden" name="orden" value="<?= e($orden) ?>">
+            <input type="hidden" name="direccion" value="<?= e($direccion) ?>">
+        <?php endif; ?>
         <div>
             <label for="q">Buscar</label>
             <input type="text" id="q" name="q" placeholder="Nombre, codigo, categoria o marca" value="<?= e($q) ?>">
@@ -155,7 +191,7 @@ require __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="card">
-    <h2>Listado <small>Total: <?= count($productos) ?></small></h2>
+    <h2>Listado <small data-total>Total: <?= count($productos) ?></small></h2>
 
     <?php if (empty($productos)): ?>
         <?php if ($estado === '0'): ?>
@@ -165,17 +201,17 @@ require __DIR__ . '/../includes/header.php';
         <?php endif; ?>
     <?php else: ?>
     <div class="tabla-scroll">
-    <table>
+    <table data-buscar>
         <thead>
             <tr>
                 <th>Imagen</th>
-                <th>Codigo</th>
-                <th>Nombre</th>
-                <th>Categoria</th>
-                <th>Marca</th>
-                <th>Precio</th>
-                <th>Stock actual</th>
-                <th>Stock critico</th>
+                <?= cabecera_ordenable('codigo', 'Codigo', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('nombre', 'Nombre', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('categoria', 'Categoria', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('marca', 'Marca', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('precio', 'Precio', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('stock_actual', 'Stock actual', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('stock_minimo', 'Stock critico', $orden, $direccion, $filtros) ?>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
@@ -188,7 +224,7 @@ require __DIR__ . '/../includes/header.php';
             $stockBajo    = $stockActual < $stockCriticoFila;
             $activo       = (int) $fila['estado'] === 1;
             ?>
-            <tr>
+            <tr data-buscar="<?= e($fila['codigo'] . ' ' . $fila['nombre'] . ' ' . $fila['categoria'] . ' ' . $fila['marca']) ?>">
                 <td>
                     <?php if ($fila['imagen'] !== null && $fila['imagen'] !== ''): ?>
                         <img class="miniatura" src="<?= e(ruta_imagen($fila['imagen'], '../')) ?>"
@@ -239,6 +275,7 @@ require __DIR__ . '/../includes/header.php';
         </tbody>
     </table>
     </div>
+    <p class="vacio buscador-vacio" hidden>No hay resultados para esta busqueda.</p>
     <?php endif; ?>
 </div>
 

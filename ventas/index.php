@@ -5,10 +5,39 @@ session_start();
 require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
+require __DIR__ . '/../includes/ordenamiento.php';
 
 requerir_permiso('ventas', '../');
 
 $q = trim($_GET['q'] ?? '');
+
+/* Columnas ordenables del registro de ventas. */
+$ordenes = [
+    'id_venta'        => 'v.id_venta',
+    'fecha_hora'      => 'v.fecha_hora',
+    'producto'        => 'p.nombre',
+    'cantidad'        => 'd.cantidad',
+    'precio_unitario' => 'd.precio_unitario',
+    'total'           => 'v.total',
+    'usuario'         => 'u.nombre',
+];
+$orden = $_GET['orden'] ?? '';
+if (!isset($ordenes[$orden])) {
+    $orden = '';
+}
+$direccion = $_GET['direccion'] ?? 'asc';
+if (!in_array($direccion, ['asc', 'desc'], true)) {
+    $direccion = 'asc';
+}
+
+$filtros = [];
+if ($q !== '') {
+    $filtros['q'] = $q;
+}
+if ($orden !== '') {
+    $filtros['orden'] = $orden;
+    $filtros['direccion'] = $direccion;
+}
 
 $sql = 'SELECT v.id_venta, v.fecha_hora, v.total, v.moneda, u.nombre AS usuario,
                p.codigo, p.nombre AS producto, d.cantidad, d.precio_unitario
@@ -27,7 +56,11 @@ if ($q !== '') {
     $parametros[':q3'] = $busqueda;
     $parametros[':q4'] = $busqueda;
 }
-$sql .= ' ORDER BY v.fecha_hora DESC, v.id_venta DESC LIMIT 100';
+if ($orden !== '') {
+    $sql .= ' ORDER BY ' . $ordenes[$orden] . ' ' . strtoupper($direccion) . ', v.id_venta DESC LIMIT 100';
+} else {
+    $sql .= ' ORDER BY v.fecha_hora DESC, v.id_venta DESC LIMIT 100';
+}
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
@@ -50,6 +83,10 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">
+        <?php if ($orden !== ''): ?>
+            <input type="hidden" name="orden" value="<?= e($orden) ?>">
+            <input type="hidden" name="direccion" value="<?= e($direccion) ?>">
+        <?php endif; ?>
         <div>
             <label for="q">Buscar venta</label>
             <input type="text" id="q" name="q" placeholder="Producto, usuario o numero de venta" value="<?= e($q) ?>">
@@ -63,27 +100,27 @@ require __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="card">
-    <h2>Registro de ventas <small><?= count($ventas) ?> registros</small></h2>
+    <h2>Registro de ventas <small data-total><?= count($ventas) ?> registros</small></h2>
 
     <?php if (empty($ventas)): ?>
         <p class="vacio">No hay ventas con este buscador.</p>
     <?php else: ?>
     <div class="tabla-scroll">
-    <table>
+    <table data-buscar>
         <thead>
             <tr>
-                <th>N.</th>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio unit.</th>
-                <th>Total</th>
-                <th>Usuario</th>
+                <?= cabecera_ordenable('id_venta', 'N.', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('fecha_hora', 'Fecha', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('producto', 'Producto', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('cantidad', 'Cantidad', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('precio_unitario', 'Precio unit.', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('total', 'Total', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('usuario', 'Usuario', $orden, $direccion, $filtros) ?>
             </tr>
         </thead>
         <tbody>
         <?php foreach ($ventas as $fila): ?>
-            <tr>
+            <tr data-buscar="<?= e($fila['id_venta'] . ' ' . $fila['codigo'] . ' ' . $fila['producto'] . ' ' . $fila['usuario']) ?>">
                 <td><?= (int) $fila['id_venta'] ?></td>
                 <td><?= e($fila['fecha_hora']) ?></td>
                 <td><?= e($fila['codigo']) ?> - <?= e($fila['producto']) ?></td>
@@ -96,6 +133,7 @@ require __DIR__ . '/../includes/header.php';
         </tbody>
     </table>
     </div>
+    <p class="vacio buscador-vacio" hidden>No hay resultados para esta busqueda.</p>
     <?php endif; ?>
 </div>
 

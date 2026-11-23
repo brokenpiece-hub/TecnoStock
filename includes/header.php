@@ -21,7 +21,6 @@ $iconos = [
     'logo'         => '<svg class="icono logo-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/></svg>',
     'inicio'       => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg>',
     'productos'    => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/></svg>',
-    'nuevo'        => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
     'movimientos'  => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 8h14"/><path d="m15 5 3 3-3 3"/><path d="M20 16H6"/><path d="m9 13-3 3 3 3"/></svg>',
     'stock'        => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>',
     'ventas'       => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h2l2 10h10l2-7H6"/><circle cx="9" cy="19" r="1"/><circle cx="17" cy="19" r="1"/></svg>',
@@ -49,8 +48,9 @@ $iconos = [
             document.documentElement.style.colorScheme = guardado === 'claro' ? 'light' : 'dark';
         })();
     </script>
-    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=7">
+    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=10">
     <script src="<?= e($base) ?>assets/tema.js?v=1" defer></script>
+    <script src="<?= e($base) ?>assets/buscador.js?v=4" defer></script>
 </head>
 <body class="<?= $login ? 'login-body' : 'app-body' ?>">
 
@@ -77,9 +77,6 @@ $iconos = [
             <?php if (tiene_permiso('productos')): ?>
                 <a href="<?= e($base) ?>productos/index.php" class="<?= $pagina === 'productos' ? 'activo' : '' ?>" <?= $pagina === 'productos' ? 'aria-current="page"' : '' ?>>
                     <?= $iconos['productos'] ?><span>Productos</span>
-                </a>
-                <a href="<?= e($base) ?>productos/crear.php" class="<?= $pagina === 'nuevo' ? 'activo' : '' ?>" <?= $pagina === 'nuevo' ? 'aria-current="page"' : '' ?>>
-                    <?= $iconos['nuevo'] ?><span>Nuevo producto</span>
                 </a>
             <?php endif; ?>
             <?php if (tiene_permiso('movimientos')): ?>

@@ -5,6 +5,7 @@ session_start();
 require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
+require __DIR__ . '/../includes/ordenamiento.php';
 
 requerir_permiso('movimientos', '../');
 
@@ -13,6 +14,35 @@ if (!in_array($tipo, ['entrada', 'salida'], true)) {
     $tipo = '';
 }
 $q = trim($_GET['q'] ?? '');
+
+/* Columnas ordenables del historial. */
+$ordenes = [
+    'fecha_hora'  => 'm.fecha_hora',
+    'producto'    => 'p.nombre',
+    'tipo'        => 'm.tipo',
+    'cantidad'    => 'm.cantidad',
+    'observacion' => 'm.observacion',
+    'usuario'     => 'u.nombre',
+];
+$orden = $_GET['orden'] ?? '';
+if (!isset($ordenes[$orden])) {
+    $orden = '';
+}
+$direccion = $_GET['direccion'] ?? 'asc';
+if (!in_array($direccion, ['asc', 'desc'], true)) {
+    $direccion = 'asc';
+}
+
+$filtros = [];
+foreach (['q' => $q, 'tipo' => $tipo] as $clave => $valor) {
+    if ($valor !== '') {
+        $filtros[$clave] = $valor;
+    }
+}
+if ($orden !== '') {
+    $filtros['orden'] = $orden;
+    $filtros['direccion'] = $direccion;
+}
 
 $sql = 'SELECT m.id_movimiento, m.fecha_hora, m.tipo, m.cantidad, m.observacion,
                p.codigo, p.nombre AS producto, u.nombre AS usuario
@@ -37,13 +67,20 @@ if ($q !== '') {
 if (!empty($condiciones)) {
     $sql .= ' WHERE ' . implode(' AND ', $condiciones);
 }
-$sql .= ' ORDER BY m.fecha_hora DESC, m.id_movimiento DESC LIMIT 100';
+if ($orden !== '') {
+    $sql .= ' ORDER BY ' . $ordenes[$orden] . ' ' . strtoupper($direccion) . ', m.id_movimiento DESC LIMIT 100';
+} else {
+    $sql .= ' ORDER BY m.fecha_hora DESC, m.id_movimiento DESC LIMIT 100';
+}
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
 $movimientos = $stmt->fetchAll();
 
-$mensajes = ['creado' => 'Movimiento registrado correctamente.'];
+$mensajes = [
+    'creado'             => 'Movimiento registrado correctamente.',
+    'creado_con_producto' => 'Producto creado y entrada registrada correctamente.',
+];
 $mensaje = isset($_GET['msg']) && isset($mensajes[$_GET['msg']]) ? $mensajes[$_GET['msg']] : '';
 
 $titulo = 'TecnoStock - Movimientos';
@@ -60,6 +97,10 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">
+        <?php if ($orden !== ''): ?>
+            <input type="hidden" name="orden" value="<?= e($orden) ?>">
+            <input type="hidden" name="direccion" value="<?= e($direccion) ?>">
+        <?php endif; ?>
         <div>
             <label for="q">Buscar movimiento</label>
             <input type="text" id="q" name="q" placeholder="Producto, observacion o usuario" value="<?= e($q) ?>">
@@ -81,26 +122,26 @@ require __DIR__ . '/../includes/header.php';
 </div>
 
 <div class="card">
-    <h2>Historial <small><?= count($movimientos) ?> registros</small></h2>
+    <h2>Historial <small data-total><?= count($movimientos) ?> registros</small></h2>
 
     <?php if (empty($movimientos)): ?>
         <p class="vacio">No hay movimientos con estos filtros.</p>
     <?php else: ?>
     <div class="tabla-scroll">
-    <table>
+    <table data-buscar>
         <thead>
             <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Observacion</th>
-                <th>Usuario</th>
+                <?= cabecera_ordenable('fecha_hora', 'Fecha', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('producto', 'Producto', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('tipo', 'Tipo', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('cantidad', 'Cantidad', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('observacion', 'Observacion', $orden, $direccion, $filtros) ?>
+                <?= cabecera_ordenable('usuario', 'Usuario', $orden, $direccion, $filtros) ?>
             </tr>
         </thead>
         <tbody>
         <?php foreach ($movimientos as $fila): ?>
-            <tr>
+            <tr data-buscar="<?= e($fila['codigo'] . ' ' . $fila['producto'] . ' ' . $fila['observacion'] . ' ' . $fila['usuario']) ?>">
                 <td><?= e($fila['fecha_hora']) ?></td>
                 <td><?= e($fila['codigo']) ?> - <?= e($fila['producto']) ?></td>
                 <td>
@@ -116,6 +157,7 @@ require __DIR__ . '/../includes/header.php';
         </tbody>
     </table>
     </div>
+    <p class="vacio buscador-vacio" hidden>No hay resultados para esta busqueda.</p>
     <?php endif; ?>
 </div>
 
