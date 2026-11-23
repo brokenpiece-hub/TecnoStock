@@ -49,7 +49,7 @@ $iconos = [
             document.documentElement.style.colorScheme = guardado === 'claro' ? 'light' : 'dark';
         })();
     </script>
-    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=5">
+    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=7">
     <script src="<?= e($base) ?>assets/tema.js?v=1" defer></script>
 </head>
 <body class="<?= $login ? 'login-body' : 'app-body' ?>">

@@ -55,12 +55,10 @@ $parametros = [':estado' => $estado];
 if ($q !== '') {
     $condiciones[] = '(p.codigo LIKE :q1 OR p.nombre LIKE :q2 OR c.nombre LIKE :q3 OR p.marca LIKE :q4)';
     $busqueda = '%' . $q . '%';
-    $parametros = [
-        ':q1' => $busqueda,
-        ':q2' => $busqueda,
-        ':q3' => $busqueda,
-        ':q4' => $busqueda,
-    ];
+    $parametros[':q1'] = $busqueda;
+    $parametros[':q2'] = $busqueda;
+    $parametros[':q3'] = $busqueda;
+    $parametros[':q4'] = $busqueda;
 }
 if ($idCategoria !== null && $idCategoria > 0) {
     $condiciones[] = 'p.id_categoria = :id_categoria';
@@ -115,6 +113,7 @@ require __DIR__ . '/../includes/header.php';
        <?= $estado === '0' ? 'aria-current="page"' : '' ?>>
         Inactivos <span class="tab-num"><?= $totalInactivos ?></span>
     </a>
+    <a class="btn btn-acento btn-pequeno tab-accion" href="crear.php">Nuevo producto</a>
 </nav>
 
 <div class="card">
@@ -151,7 +150,6 @@ require __DIR__ . '/../includes/header.php';
         <div class="filtros-acciones">
             <button type="submit">Buscar</button>
             <a class="btn btn-gris" href="index.php?estado=<?= e($estado) ?>">Limpiar</a>
-            <a class="btn btn-acento" href="crear.php">Nuevo producto</a>
         </div>
     </form>
 </div>

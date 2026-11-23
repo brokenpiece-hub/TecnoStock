@@ -9,6 +9,7 @@ require __DIR__ . '/../includes/funciones.php';
 requerir_permiso('stock', '../');
 
 $q = trim($_GET['q'] ?? '');
+$idCategoria = entero_no_negativo($_GET['id_categoria'] ?? null);
 $marca = trim($_GET['marca'] ?? '');
 $estado = $_GET['estado'] ?? '1';
 if (!in_array($estado, ['1', '0'], true)) {
@@ -28,7 +29,7 @@ foreach ($conteos as $conteo) {
 }
 
 $filtrosTab = ['estado' => '1'];
-foreach (['q' => $q, 'marca' => $marca] as $clave => $valor) {
+foreach (['q' => $q, 'id_categoria' => $idCategoria, 'marca' => $marca] as $clave => $valor) {
     if ($valor !== '') {
         $filtrosTab[$clave] = $valor;
     }
@@ -49,12 +50,14 @@ $parametros = [':estado' => $estado];
 if ($q !== '') {
     $condiciones[] = '(p.codigo LIKE :q1 OR p.nombre LIKE :q2 OR c.nombre LIKE :q3 OR p.marca LIKE :q4)';
     $busqueda = '%' . $q . '%';
-    $parametros = [
-        ':q1' => $busqueda,
-        ':q2' => $busqueda,
-        ':q3' => $busqueda,
-        ':q4' => $busqueda,
-    ];
+    $parametros[':q1'] = $busqueda;
+    $parametros[':q2'] = $busqueda;
+    $parametros[':q3'] = $busqueda;
+    $parametros[':q4'] = $busqueda;
+}
+if ($idCategoria !== null && $idCategoria > 0) {
+    $condiciones[] = 'p.id_categoria = :id_categoria';
+    $parametros[':id_categoria'] = $idCategoria;
 }
 if ($marca !== '') {
     $condiciones[] = 'p.marca LIKE :marca';
@@ -68,6 +71,8 @@ $sql .= ' ORDER BY p.estado DESC, (p.stock_actual < p.stock_minimo) DESC, p.codi
 $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
 $productos = $stmt->fetchAll();
+
+$categorias = $pdo->query('SELECT id_categoria, nombre FROM categorias ORDER BY nombre')->fetchAll();
 
 $stockBajo = (int) $pdo->query(
     'SELECT COUNT(*) FROM productos WHERE estado = 1 AND stock_actual < stock_minimo'
@@ -114,8 +119,20 @@ require __DIR__ . '/../includes/header.php';
     <form class="barra-filtros" method="get" action="index.php">
         <input type="hidden" name="estado" value="<?= e($estado) ?>">
         <div>
-            <label for="q">Buscar</label>
-            <input type="text" id="q" name="q" placeholder="Nombre, codigo, categoria o marca" value="<?= e($q) ?>">
+            <label for="q">Buscar producto</label>
+            <input type="text" id="q" name="q" placeholder="Codigo, nombre, categoria o marca" value="<?= e($q) ?>">
+        </div>
+        <div>
+            <label for="id_categoria">Categoria</label>
+            <select id="id_categoria" name="id_categoria">
+                <option value="">Todas</option>
+                <?php foreach ($categorias as $categoria): ?>
+                    <option value="<?= (int) $categoria['id_categoria'] ?>"
+                        <?= (string) $categoria['id_categoria'] === (string) $idCategoria ? 'selected' : '' ?>>
+                        <?= e($categoria['nombre']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
         </div>
         <div>
             <label for="marca">Marca</label>

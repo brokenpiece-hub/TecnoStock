@@ -32,16 +32,16 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - Marca: se escribe directamente en el formulario, no se elige de una lista.
 - Filtros de productos: por categoria, marca escrita y stock critico; se pueden combinar entre si.
 - Imagenes: subir JPG, PNG o WEBP (maximo 2 MB) al crear o editar un producto; tambien se pueden reemplazar o quitar.
-- Movimientos: registrar entradas y salidas.
-- Ventas: registrar venta con descuento de stock y movimiento automatico.
-- Stock: vista de solo lectura con existencias, alertas y ultimos movimientos. Muestra la marca, permite filtrar por texto y marca y tiene un boton **Actualizar** para traer los cambios hechos en Productos. Tambien tiene pestañas **Activos** e **Inactivos** para separar los productos sin eliminarlos. No tiene botones de edicion.
+- Movimientos: registrar entradas y salidas. El historial se puede buscar por producto, observacion o usuario y se puede combinar con el filtro por tipo.
+- Ventas: registrar venta con descuento de stock y movimiento automatico. El registro se puede buscar por producto, usuario o numero de venta.
+- Stock: vista de solo lectura con existencias, alertas y ultimos movimientos. Muestra la marca, permite buscar productos y filtrar por categoria y marca, y tiene un boton **Actualizar** para traer los cambios hechos en Productos. Tambien tiene pestañas **Activos** e **Inactivos** para separar los productos sin eliminarlos. No tiene botones de edicion.
 - Usuarios: crear, editar, desactivar y asignar permisos por modulo.
 - Diseno: paleta oscura violeta inspirada en HBO Max, con modo claro y oscuro. El boton del encabezado cambia el tema y el navegador recuerda la eleccion.
 
 ## Reglas de negocio
 
 - El codigo de producto no se repite.
-- Cada producto tiene una categoria seleccionable y una marca escrita por el usuario.
+- Cada producto tiene una categoria seleccionable (incluye **Mouse**) y una marca escrita por el usuario.
 - Precio, stocks y cantidades son numeros no negativos; stocks y cantidades son enteros.
 - Una salida o venta no puede dejar el stock bajo cero.
 - Cada movimiento guarda fecha, tipo, cantidad, producto y usuario.

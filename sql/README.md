@@ -39,4 +39,4 @@ Relaciones: `usuario_modulos` une usuarios con modulos. `productos.id_categoria 
 
 Inicio siempre esta disponible despues de iniciar sesion. El menu y cada pagina validan el permiso en PHP. El modulo `stock` existe para consultar existencias sin editar productos; sus 11 permisos se cargan desde la tabla `modulos`.
 
-Hay 5 categorias, 9 productos (1 desactivado), 18 movimientos y 3 ventas.
+Hay 6 categorias (la sexta es Mouse), 9 productos (1 desactivado), 18 movimientos y 3 ventas.

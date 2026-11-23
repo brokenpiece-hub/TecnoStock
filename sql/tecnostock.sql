@@ -149,7 +149,8 @@ INSERT INTO categorias (id_categoria, nombre, descripcion) VALUES
   (2, 'Carga',      'Cargadores y fuentes'),
   (3, 'Audio',      'Audifonos y altavoces'),
   (4, 'Redes',      'Routers y conectividad'),
-  (5, 'Proteccion', 'Fundas y protectores');
+  (5, 'Proteccion', 'Fundas y protectores'),
+  (6, 'Mouse',      'Mouses y ratones');
 
 INSERT INTO usuarios (id_usuario, nombre, correo, clave) VALUES
   (1, 'Admin TecnoStock', 'admin@tecnostock.cl',

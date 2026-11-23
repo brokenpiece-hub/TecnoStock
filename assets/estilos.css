@@ -417,6 +417,12 @@ a:hover {
     color: #FFFFFF;
 }
 
+/* Accion principal al lado de las pestañas */
+.tab-accion {
+    align-self: center;
+    margin: 0 0 8px auto;
+}
+
 /* Boton de tema */
 .tema-toggle {
     display: inline-flex;
