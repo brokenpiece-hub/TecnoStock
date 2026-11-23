@@ -56,15 +56,15 @@ require __DIR__ . '/includes/header.php';
 <h2>Ingreso al sistema</h2>
 
 <?php if ($error !== ''): ?>
-    <p class="error"><?= e($error) ?></p>
+    <p class="error" role="alert"><?= e($error) ?></p>
 <?php endif; ?>
 
 <form method="post" action="index.php">
     <label for="correo">Correo:</label>
-    <input type="email" id="correo" name="correo" required value="<?= e($correo) ?>">
+    <input type="email" id="correo" name="correo" autocomplete="username" required value="<?= e($correo) ?>">
 
     <label for="clave">Contrasena:</label>
-    <input type="password" id="clave" name="clave" required>
+    <input type="password" id="clave" name="clave" autocomplete="current-password" required>
 
     <button type="submit">Ingresar</button>
 </form>

@@ -122,7 +122,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <?php if (!empty($errores)): ?>
-        <ul class="error">
+        <ul class="error" role="alert">
             <?php foreach ($errores as $error): ?>
                 <li><?= e($error) ?></li>
             <?php endforeach; ?>
@@ -153,7 +153,7 @@ require __DIR__ . '/../includes/header.php';
             </div>
         </div>
 
-        <p class="mensaje" id="stock-disponible">Stock disponible: seleccione un producto</p>
+        <p class="mensaje" id="stock-disponible" aria-live="polite">Stock disponible: seleccione un producto</p>
 
         <p>
             <button type="submit">Registrar venta</button>

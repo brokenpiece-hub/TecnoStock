@@ -18,9 +18,9 @@ Sistema web de inventario para accesorios tecnologicos. Permite registrar produc
 
 | Correo | Clave | Modulos permitidos |
 |---|---|---|
-| `admin@tecnostock.cl` | `admin123` | Productos, Movimientos, Ventas, Usuarios |
-| `operador@tecnostock.cl` | `operador123` | Productos, Movimientos, Ventas |
-| `vendedor@tecnostock.cl` | `vendedor123` | Ventas |
+| `admin@tecnostock.cl` | `admin123` | Productos, Movimientos, Ventas, Usuarios, Stock |
+| `operador@tecnostock.cl` | `operador123` | Productos, Movimientos, Ventas, Stock |
+| `vendedor@tecnostock.cl` | `vendedor123` | Ventas, Stock |
 
 Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, no aparece en el menu y tampoco puede abrirlo escribiendo la URL: cada pagina valida el permiso en PHP.
 
@@ -28,18 +28,27 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 
 - Inicio de sesion con usuario registrado.
 - Dashboard con metricas, alertas de stock bajo, ultimos movimientos y ultimas ventas.
-- Productos: registrar, listar, buscar por nombre/codigo/categoria, editar y desactivar.
+- Productos: registrar, listar, buscar por nombre/codigo/categoria/marca, editar y desactivar.
+- Marca: se escribe directamente en el formulario, no se elige de una lista.
+- Filtros de productos: por categoria, marca escrita y stock critico; se pueden combinar entre si.
+- Imagenes: subir JPG, PNG o WEBP (maximo 2 MB) al crear o editar un producto; tambien se pueden reemplazar o quitar.
 - Movimientos: registrar entradas y salidas.
 - Ventas: registrar venta con descuento de stock y movimiento automatico.
+- Stock: vista de solo lectura con existencias, alertas y ultimos movimientos. Muestra la marca, permite filtrar por texto y marca y tiene un boton **Actualizar** para traer los cambios hechos en Productos. No tiene botones de edicion.
 - Usuarios: crear, editar, desactivar y asignar permisos por modulo.
+- Diseno: paleta oscura violeta inspirada en HBO Max, con modo claro y oscuro. El boton del encabezado cambia el tema y el navegador recuerda la eleccion.
 
 ## Reglas de negocio
 
 - El codigo de producto no se repite.
+- Cada producto tiene una categoria seleccionable y una marca escrita por el usuario.
 - Precio, stocks y cantidades son numeros no negativos; stocks y cantidades son enteros.
 - Una salida o venta no puede dejar el stock bajo cero.
 - Cada movimiento guarda fecha, tipo, cantidad, producto y usuario.
 - El stock se actualiza al registrar entradas, salidas y ventas.
+- Toda venta guarda `ventas`, `detalle_ventas`, descuenta el stock y crea una salida en `movimientos` en una sola transaccion.
+- Las imagenes se guardan en `assets/img/productos/`; en la BD solo se guarda el nombre del archivo.
+- El modulo Stock solo muestra datos: no permite crear, editar ni desactivar productos.
 - Los productos con movimientos se desactivan, no se eliminan.
 
 ## Pruebas
@@ -49,7 +58,13 @@ Los permisos se administran en **Usuarios**. Si un usuario no tiene un modulo, n
 - Login y menu segun permisos.
 - Acceso directo por URL a un modulo sin permiso (denegado).
 - Alta, busqueda, edicion y desactivacion de productos.
+- Filtros por categoria, marca y stock critico, solos y combinados.
 - Codigo duplicado y cantidades no enteras (rechazados).
 - Entrada, salida y salida sin stock (rechazada).
 - Venta valida, venta sin stock y venta sobre el stock (rechazadas).
+- Venta del vendedor: descuenta stock y aparece como salida en Stock.
+- Subida, reemplazo y eliminacion de imagen; archivos invalidos o mayores a 2 MB (rechazados).
+- Vendedor ve Ventas y Stock, no ve Productos y recibe 403 si abre `productos/` por URL.
+- Editar un producto y actualizar Stock: el nuevo stock y la nueva marca aparecen en el modulo Stock.
 - Creacion y edicion de usuarios con distintos permisos.
+- Cambio de tema claro/oscuro y persistencia despues de recargar la pagina.

@@ -36,7 +36,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <form class="barra-acciones" method="get" action="index.php">
-        <a class="btn btn-verde" href="crear.php">Nueva venta</a>
+        <a class="btn btn-acento" href="crear.php">Nueva venta</a>
     </form>
 </div>
 

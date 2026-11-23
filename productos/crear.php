@@ -20,6 +20,7 @@ $datos = [
     'stock_actual' => '0',
     'stock_minimo' => '0',
     'id_categoria' => '',
+    'marca'        => '',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -53,6 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if (strlen($datos['marca']) < 2 || strlen($datos['marca']) > 80) {
+        $errores[] = 'La marca debe tener entre 2 y 80 caracteres.';
+    }
+
     $precio = precio_valido($datos['precio']);
     if ($precio === null) {
         $errores[] = 'El precio debe ser un numero mayor o igual a cero.';
@@ -71,12 +76,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'El stock critico debe ser un entero mayor o igual a cero.';
     }
 
+    $archivo = ['imagen' => null, 'error' => ''];
+    if (empty($errores)) {
+        $archivo = procesar_imagen_producto($_FILES['imagen'] ?? null);
+        if ($archivo['error'] !== '') {
+            $errores[] = $archivo['error'];
+        }
+    }
+
     if (empty($errores)) {
         $insert = $pdo->prepare(
             'INSERT INTO productos
-                (codigo, nombre, descripcion, precio, moneda, stock_actual, stock_minimo, estado, id_categoria)
+                (codigo, nombre, descripcion, precio, moneda, stock_actual, stock_minimo, estado, id_categoria, marca, imagen)
              VALUES
-                (:codigo, :nombre, :descripcion, :precio, :moneda, :stock_actual, :stock_minimo, 1, :id_categoria)'
+                (:codigo, :nombre, :descripcion, :precio, :moneda, :stock_actual, :stock_minimo, 1, :id_categoria, :marca, :imagen)'
         );
         $insert->execute([
             ':codigo'       => $codigo,
@@ -87,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':stock_actual' => $stockActual,
             ':stock_minimo' => $stockCritico,
             ':id_categoria' => $idCategoria,
+            ':marca'        => $datos['marca'],
+            ':imagen'       => $archivo['imagen'],
         ]);
 
         redirigir('index.php?msg=creado');
@@ -102,14 +117,14 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <?php if (!empty($errores)): ?>
-        <ul class="error">
+        <ul class="error" role="alert">
             <?php foreach ($errores as $error): ?>
                 <li><?= e($error) ?></li>
             <?php endforeach; ?>
         </ul>
     <?php endif; ?>
 
-    <form method="post" action="crear.php">
+    <form method="post" action="crear.php" enctype="multipart/form-data">
         <div class="form-grid">
             <div>
                 <label for="codigo">Codigo</label>
@@ -130,6 +145,11 @@ require __DIR__ . '/../includes/header.php';
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+            <div>
+                <label for="marca">Marca</label>
+                <input type="text" id="marca" name="marca" maxlength="80" required
+                       placeholder="Escriba la marca" value="<?= e($datos['marca']) ?>">
             </div>
             <div>
                 <label for="descripcion">Descripcion</label>
@@ -156,6 +176,11 @@ require __DIR__ . '/../includes/header.php';
             <div>
                 <label for="stock_minimo">Stock critico</label>
                 <input type="number" step="1" min="0" id="stock_minimo" name="stock_minimo" required value="<?= e($datos['stock_minimo']) ?>">
+            </div>
+            <div class="form-completo">
+                <label for="imagen">Imagen del producto (opcional)</label>
+                <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp">
+                <small class="ayuda">JPG, PNG o WEBP. Maximo 2 MB.</small>
             </div>
         </div>
 

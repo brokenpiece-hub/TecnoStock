@@ -15,7 +15,7 @@ if ($id === null || $id === 0) {
 
 $stmt = $pdo->prepare(
     'SELECT id_producto, codigo, nombre, descripcion, precio, moneda,
-            stock_actual, stock_minimo, id_categoria
+            stock_actual, stock_minimo, id_categoria, marca, imagen
        FROM productos
       WHERE id_producto = :id'
 );
@@ -27,6 +27,7 @@ if ($producto === false) {
 }
 
 $categorias = $pdo->query('SELECT id_categoria, nombre FROM categorias WHERE estado = 1 ORDER BY nombre')->fetchAll();
+$imagenActual = $producto['imagen'];
 
 $errores = [];
 $datos = [
@@ -36,6 +37,7 @@ $datos = [
     'stock_actual' => (string) $producto['stock_actual'],
     'stock_minimo' => (string) $producto['stock_minimo'],
     'id_categoria' => (string) $producto['id_categoria'],
+    'marca'        => $producto['marca'],
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -52,6 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ((int) $stmt->fetchColumn() === 0) {
             $errores[] = 'La categoria no es valida.';
         }
+    }
+
+    if (strlen($datos['marca']) < 2 || strlen($datos['marca']) > 80) {
+        $errores[] = 'La marca debe tener entre 2 y 80 caracteres.';
     }
 
     $precio = precio_valido($datos['precio']);
@@ -72,7 +78,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'El stock critico debe ser un entero mayor o igual a cero.';
     }
 
+    $archivo = ['imagen' => null, 'error' => ''];
+    $quitarImagen = isset($_POST['quitar_imagen']) && $_POST['quitar_imagen'] === '1';
     if (empty($errores)) {
+        $archivo = procesar_imagen_producto($_FILES['imagen'] ?? null);
+        if ($archivo['error'] !== '') {
+            $errores[] = $archivo['error'];
+        }
+    }
+
+    if (empty($errores)) {
+        $imagenFinal = $imagenActual;
+        if ($quitarImagen) {
+            $imagenFinal = null;
+        }
+        if ($archivo['imagen'] !== null) {
+            $imagenFinal = $archivo['imagen'];
+        }
+
         $update = $pdo->prepare(
             'UPDATE productos
                 SET descripcion = :descripcion,
@@ -80,7 +103,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     moneda = :moneda,
                     stock_actual = :stock_actual,
                     stock_minimo = :stock_minimo,
-                    id_categoria = :id_categoria
+                    id_categoria = :id_categoria,
+                    marca = :marca,
+                    imagen = :imagen
               WHERE id_producto = :id'
         );
         $update->execute([
@@ -90,8 +115,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':stock_actual' => $stockActual,
             ':stock_minimo' => $stockCritico,
             ':id_categoria' => $idCategoria,
+            ':marca'        => $datos['marca'],
+            ':imagen'       => $imagenFinal,
             ':id'           => $id,
         ]);
+
+        if (($quitarImagen || $archivo['imagen'] !== null) && $imagenActual !== null) {
+            borrar_imagen_producto($imagenActual);
+        }
 
         redirigir('index.php?msg=editado');
     }
@@ -106,7 +137,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <?php if (!empty($errores)): ?>
-        <ul class="error">
+        <ul class="error" role="alert">
             <?php foreach ($errores as $error): ?>
                 <li><?= e($error) ?></li>
             <?php endforeach; ?>
@@ -115,7 +146,7 @@ require __DIR__ . '/../includes/header.php';
 
     <p><strong><?= e($producto['codigo']) ?></strong> - <?= e($producto['nombre']) ?></p>
 
-    <form method="post" action="editar.php?id=<?= $id ?>">
+    <form method="post" action="editar.php?id=<?= $id ?>" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?= $id ?>">
 
         <div class="form-grid">
@@ -149,12 +180,31 @@ require __DIR__ . '/../includes/header.php';
                 </select>
             </div>
             <div>
+                <label for="marca">Marca</label>
+                <input type="text" id="marca" name="marca" maxlength="80" required
+                       placeholder="Escriba la marca" value="<?= e($datos['marca']) ?>">
+            </div>
+            <div>
                 <label for="stock_actual">Stock actual</label>
                 <input type="number" step="1" min="0" id="stock_actual" name="stock_actual" required value="<?= e($datos['stock_actual']) ?>">
             </div>
             <div>
                 <label for="stock_minimo">Stock critico</label>
                 <input type="number" step="1" min="0" id="stock_minimo" name="stock_minimo" required value="<?= e($datos['stock_minimo']) ?>">
+            </div>
+            <div class="form-completo">
+                <label for="imagen">Imagen del producto (opcional)</label>
+                <?php if ($imagenActual !== null && $imagenActual !== ''): ?>
+                    <p>
+                        <img class="miniatura" src="<?= e(ruta_imagen($imagenActual, '../')) ?>"
+                             alt="Imagen actual de <?= e($producto['nombre']) ?>" width="56" height="56">
+                    </p>
+                    <label class="check">
+                        <input type="checkbox" name="quitar_imagen" value="1"> Quitar imagen actual
+                    </label>
+                <?php endif; ?>
+                <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp">
+                <small class="ayuda">JPG, PNG o WEBP. Maximo 2 MB. Si subes otra, reemplaza a la actual.</small>
             </div>
         </div>
 

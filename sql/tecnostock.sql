@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS usuario_modulos;
 DROP TABLE IF EXISTS modulos;
 DROP TABLE IF EXISTS categorias;
+DROP TABLE IF EXISTS marcas;
 DROP TABLE IF EXISTS usuarios;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -75,9 +76,12 @@ CREATE TABLE productos (
   stock_minimo  INT UNSIGNED NOT NULL DEFAULT 0,
   estado        TINYINT(1) NOT NULL DEFAULT 1,
   id_categoria  INT UNSIGNED NOT NULL,
+  marca         VARCHAR(80) NOT NULL,
+  imagen        VARCHAR(255) NULL,
   PRIMARY KEY (id_producto),
   UNIQUE KEY uq_codigo (codigo),
   KEY idx_categoria (id_categoria),
+  KEY idx_marca (marca),
   CONSTRAINT fk_productos_categoria FOREIGN KEY (id_categoria)
     REFERENCES categorias (id_categoria),
   CONSTRAINT chk_productos_precio CHECK (precio >= 0),
@@ -159,25 +163,26 @@ INSERT INTO modulos (id_modulo, clave, nombre) VALUES
   (1, 'productos', 'Productos'),
   (2, 'movimientos', 'Movimientos'),
   (3, 'ventas', 'Ventas'),
-  (4, 'usuarios', 'Usuarios');
+  (4, 'usuarios', 'Usuarios'),
+  (5, 'stock', 'Stock');
 
 INSERT INTO usuario_modulos (id_usuario, id_modulo) VALUES
-  (1,1), (1,2), (1,3), (1,4),
-  (2,1), (2,2), (2,3),
-  (3,3);
+  (1,1), (1,2), (1,3), (1,4), (1,5),
+  (2,1), (2,2), (2,3), (2,5),
+  (3,3), (3,5);
 
 INSERT INTO productos
-  (id_producto, codigo, nombre, precio, moneda, stock_actual, stock_minimo, id_categoria, estado)
+  (id_producto, codigo, nombre, precio, moneda, stock_actual, stock_minimo, id_categoria, marca, estado)
 VALUES
-  (1, 'TEC-001', 'Cable USB-C 1.5 m',   4990.00, 'CLP', 25, 10, 1, 1),
-  (2, 'TEC-002', 'Cargador GaN 65 W',  24990.00, 'CLP',  2,  5, 2, 1),
-  (3, 'TEC-003', 'Audifonos Bluetooth',39990.00, 'CLP',  9,  8, 3, 1),
-  (4, 'TEC-004', 'Hub USB 4 puertos',  18990.00, 'CLP',  0,  6, 1, 1),
-  (5, 'TEC-005', 'Router WiFi 6',      89990.00, 'CLP',  6,  3, 4, 1),
-  (6, 'TEC-006', 'Funda 13 pulgadas',  12990.00, 'CLP', 20, 12, 5, 1),
-  (7, 'TEC-007', 'Mouse inalambrico',  15990.00, 'CLP',  2,  7, 1, 1),
-  (8, 'TEC-008', 'Adaptador HDMI 4K',    34.99, 'USD', 14,  5, 1, 1),
-  (9, 'TEC-009', 'Cable VGA legacy',   8990.00, 'CLP',  7,  4, 1, 0);
+  (1, 'TEC-001', 'Cable USB-C 1.5 m',   4990.00, 'CLP', 25, 10, 1, 'Generico',   1),
+  (2, 'TEC-002', 'Cargador GaN 65 W',  24990.00, 'CLP',  2,  5, 2, 'Xiaomi',     1),
+  (3, 'TEC-003', 'Audifonos Bluetooth',39990.00, 'CLP',  9,  8, 3, 'Logitech',   1),
+  (4, 'TEC-004', 'Hub USB 4 puertos',  18990.00, 'CLP',  0,  6, 1, 'Generico',   1),
+  (5, 'TEC-005', 'Router WiFi 6',      89990.00, 'CLP',  6,  3, 4, 'TP-Link',    1),
+  (6, 'TEC-006', 'Funda 13 pulgadas',  12990.00, 'CLP', 20, 12, 5, 'Samsung',    1),
+  (7, 'TEC-007', 'Mouse inalambrico',  15990.00, 'CLP',  2,  7, 1, 'Logitech',   1),
+  (8, 'TEC-008', 'Adaptador HDMI 4K',    34.99, 'USD', 14,  5, 1, 'Generico',   1),
+  (9, 'TEC-009', 'Cable VGA legacy',   8990.00, 'CLP',  7,  4, 1, 'Generico',   0);
 
 INSERT INTO movimientos (fecha_hora, tipo, cantidad, observacion, id_producto, id_usuario) VALUES
   ('2026-11-01 09:00:00','entrada',40,'Compra inicial', 1,1),

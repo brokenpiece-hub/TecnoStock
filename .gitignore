@@ -12,3 +12,7 @@ Thumbs.db
 # Logs y respaldos
 *.log
 *.sql.bak
+
+# Skills instalados localmente
+.agents/
+skills-lock.json

@@ -59,7 +59,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <button type="submit">Filtrar</button>
         <a class="btn btn-gris" href="index.php">Limpiar</a>
-        <a class="btn btn-verde" href="crear.php">Nuevo movimiento</a>
+        <a class="btn btn-acento" href="crear.php">Nuevo movimiento</a>
     </form>
 </div>
 

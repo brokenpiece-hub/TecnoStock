@@ -53,12 +53,27 @@ require __DIR__ . '/includes/header.php';
 <h1>Inicio</h1>
 <p>Bienvenido, <strong><?= e($_SESSION['usuario_nombre']) ?></strong></p>
 
+<?php if ($stockBajo > 0 && (tiene_permiso('productos') || tiene_permiso('stock'))): ?>
+    <div class="alerta-stock" role="status">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="18" r=".5"/>
+        </svg>
+        <span>
+            <strong><?= $stockBajo ?> producto(s) con stock bajo.</strong>
+            Revisa el inventario antes de registrar una venta.
+        </span>
+        <a class="btn btn-pequeno" href="<?= tiene_permiso('productos') ? 'productos/index.php' : 'stock/index.php' ?>">
+            <?= tiene_permiso('productos') ? 'Ver productos' : 'Ver stock' ?>
+        </a>
+    </div>
+<?php endif; ?>
+
 <div class="metricas">
     <div class="metrica">
         <small>Productos activos</small>
         <strong><?= $productos ?></strong>
     </div>
-    <div class="metrica verde">
+    <div class="metrica alerta-metrica">
         <small>Productos con stock bajo</small>
         <strong><?= $stockBajo ?></strong>
     </div>
@@ -66,7 +81,7 @@ require __DIR__ . '/includes/header.php';
         <small>Movimientos</small>
         <strong><?= $movimientos ?></strong>
     </div>
-    <div class="metrica verde">
+    <div class="metrica exito-metrica">
         <small>Ventas registradas</small>
         <strong><?= $ventas ?></strong>
     </div>
@@ -78,7 +93,7 @@ require __DIR__ . '/includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php if (tiene_permiso('productos')): ?>
+<?php if (tiene_permiso('productos') || tiene_permiso('stock')): ?>
     <div class="card">
         <h2>Alertas de stock <small><?= $stockBajo ?> productos bajo el minimo</small></h2>
         <?php if (empty($alertas)): ?>
@@ -185,15 +200,18 @@ require __DIR__ . '/includes/header.php';
     <p>
         <?php if (tiene_permiso('productos')): ?>
             <a class="btn" href="productos/index.php">Ver productos</a>
-            <a class="btn btn-verde" href="productos/crear.php">Nuevo producto</a>
+            <a class="btn btn-acento" href="productos/crear.php">Nuevo producto</a>
         <?php endif; ?>
         <?php if (tiene_permiso('movimientos')): ?>
             <a class="btn" href="movimientos/index.php">Movimientos</a>
-            <a class="btn btn-verde" href="movimientos/crear.php">Nuevo movimiento</a>
+            <a class="btn btn-acento" href="movimientos/crear.php">Nuevo movimiento</a>
+        <?php endif; ?>
+        <?php if (tiene_permiso('stock')): ?>
+            <a class="btn" href="stock/index.php">Stock</a>
         <?php endif; ?>
         <?php if (tiene_permiso('ventas')): ?>
             <a class="btn" href="ventas/index.php">Ventas</a>
-            <a class="btn btn-verde" href="ventas/crear.php">Nueva venta</a>
+            <a class="btn btn-acento" href="ventas/crear.php">Nueva venta</a>
         <?php endif; ?>
         <?php if (tiene_permiso('usuarios')): ?>
             <a class="btn" href="usuarios/index.php">Usuarios y permisos</a>

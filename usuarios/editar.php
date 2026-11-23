@@ -139,7 +139,7 @@ require __DIR__ . '/../includes/header.php';
 
 <div class="card">
     <?php if (!empty($errores)): ?>
-        <ul class="error">
+        <ul class="error" role="alert">
             <?php foreach ($errores as $error): ?>
                 <li><?= e($error) ?></li>
             <?php endforeach; ?>
