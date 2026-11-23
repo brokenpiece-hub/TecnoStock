@@ -3,6 +3,7 @@
 session_start();
 
 require __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/cambio.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 require __DIR__ . '/../includes/ordenamiento.php';
@@ -77,6 +78,23 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($parametros);
 $movimientos = $stmt->fetchAll();
 
+/* Totales de dinero por moneda, igual que en Ventas: no se mezclan monedas. */
+$totalesVendidos = $pdo->query(
+    'SELECT moneda, SUM(total) AS total FROM ventas GROUP BY moneda ORDER BY moneda'
+)->fetchAll();
+
+/* No hay costo guardado: el gasto de cada entrada se calcula con el precio del producto. */
+$totalesEntradas = $pdo->query(
+    "SELECT p.moneda AS moneda, SUM(m.cantidad * p.precio) AS total
+       FROM movimientos m
+       JOIN productos p ON p.id_producto = m.id_producto
+      WHERE m.tipo = 'entrada'
+      GROUP BY p.moneda ORDER BY p.moneda"
+)->fetchAll();
+
+$totalVendidoUsd = total_en_usd($totalesVendidos);
+$totalEntradasUsd = total_en_usd($totalesEntradas);
+
 $titulo = 'TecnoStock - Movimientos';
 $base = '../';
 $pagina = 'movimientos';
@@ -84,6 +102,42 @@ require __DIR__ . '/../includes/header.php';
 ?>
 
 <h1>Movimientos</h1>
+
+<?php if (!empty($totalesVendidos) || !empty($totalesEntradas)): ?>
+    <div class="metricas">
+        <?php /* Entradas juntas, en plateado. */ ?>
+        <?php foreach ($totalesEntradas as $totalEntrada): ?>
+            <?php if ($totalEntrada['moneda'] === 'USD') { continue; } ?>
+            <div class="metrica plata-metrica">
+                <small>Gasto en entradas en <?= e($totalEntrada['moneda']) ?></small>
+                <strong><?= e($totalEntrada['moneda']) ?> <?= number_format((float) $totalEntrada['total'], 2, '.', '') ?></strong>
+            </div>
+        <?php endforeach; ?>
+        <?php if ($totalEntradasUsd > 0): ?>
+            <div class="metrica plata-metrica">
+                <small>Gasto en entradas en USD</small>
+                <strong>USD <?= number_format($totalEntradasUsd, 2, '.', '') ?></strong>
+            </div>
+        <?php endif; ?>
+        <?php /* Salidas (ventas) juntas, en morado. */ ?>
+        <?php foreach ($totalesVendidos as $totalVenta): ?>
+            <?php if ($totalVenta['moneda'] === 'USD') { continue; } ?>
+            <div class="metrica morada-metrica">
+                <small>Total vendido en <?= e($totalVenta['moneda']) ?></small>
+                <strong><?= e($totalVenta['moneda']) ?> <?= number_format((float) $totalVenta['total'], 2, '.', '') ?></strong>
+            </div>
+        <?php endforeach; ?>
+        <?php if ($totalVendidoUsd > 0): ?>
+            <div class="metrica morada-metrica">
+                <small>Total vendido en USD</small>
+                <strong>USD <?= number_format($totalVendidoUsd, 2, '.', '') ?></strong>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php if ($totalVendidoUsd > 0 || $totalEntradasUsd > 0): ?>
+        <span class="ayuda">Conversion: 1 USD = <?= number_format(CLP_POR_USD, 2, ',', '.') ?> CLP. Fuente: Google Finance, 23 nov 2026.</span>
+    <?php endif; ?>
+<?php endif; ?>
 
 <div class="card">
     <form class="barra-filtros" method="get" action="index.php">

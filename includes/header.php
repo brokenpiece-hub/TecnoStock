@@ -49,7 +49,7 @@ $iconos = [
             document.documentElement.style.colorScheme = guardado === 'claro' ? 'light' : 'dark';
         })();
     </script>
-    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=25">
+    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=26">
     <script src="<?= e($base) ?>assets/tema.js?v=1" defer></script>
     <script src="<?= e($base) ?>assets/buscador.js?v=4" defer></script>
     <script src="<?= e($base) ?>assets/buscador-ventas.js?v=1" defer></script>

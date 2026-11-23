@@ -3,6 +3,7 @@
 session_start();
 
 require __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/cambio.php';
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/funciones.php';
 require __DIR__ . '/../includes/ordenamiento.php';
@@ -70,6 +71,7 @@ $ventas = $stmt->fetchAll();
 $totalesVentas = $pdo->query(
     'SELECT moneda, SUM(total) AS total FROM ventas GROUP BY moneda ORDER BY moneda'
 )->fetchAll();
+$totalVentasUsd = total_en_usd($totalesVentas);
 
 $titulo = 'TecnoStock - Ventas';
 $base = '../';
@@ -82,12 +84,22 @@ require __DIR__ . '/../includes/header.php';
 <?php if (!empty($totalesVentas)): ?>
     <div class="metricas">
         <?php foreach ($totalesVentas as $totalVenta): ?>
-            <div class="metrica exito-metrica">
+            <?php if ($totalVenta['moneda'] === 'USD') { continue; } ?>
+            <div class="metrica morada-metrica">
                 <small>Total vendido en <?= e($totalVenta['moneda']) ?></small>
                 <strong><?= e($totalVenta['moneda']) ?> <?= number_format((float) $totalVenta['total'], 2, '.', '') ?></strong>
             </div>
         <?php endforeach; ?>
+        <?php if ($totalVentasUsd > 0): ?>
+            <div class="metrica morada-metrica">
+                <small>Total vendido en USD</small>
+                <strong>USD <?= number_format($totalVentasUsd, 2, '.', '') ?></strong>
+            </div>
+        <?php endif; ?>
     </div>
+    <?php if ($totalVentasUsd > 0): ?>
+        <span class="ayuda">Conversion: 1 USD = <?= number_format(CLP_POR_USD, 2, ',', '.') ?> CLP. Fuente: Google Finance, 23 nov 2026.</span>
+    <?php endif; ?>
 <?php endif; ?>
 
 <div class="card">

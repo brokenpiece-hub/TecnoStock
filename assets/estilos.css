@@ -22,6 +22,7 @@
 
     --exito: #3DD68C;
     --exito-suave: rgba(61, 214, 140, .14);
+    --plata: #C7CDD7;
     --peligro: #FF6B88;
     --peligro-suave: rgba(255, 107, 136, .14);
     --alerta: #FFB020;
@@ -64,6 +65,7 @@
 
     --exito: #137A4A;
     --exito-suave: rgba(19, 122, 74, .12);
+    --plata: #7C8797;
     --peligro: #C4244B;
     --peligro-suave: rgba(196, 36, 75, .10);
     --alerta: #8A5A00;
@@ -585,6 +587,25 @@ a:hover {
 
 .metrica.exito-metrica {
     border-left-color: var(--exito);
+}
+
+/* Entradas en plateado y salidas (ventas) en morado. */
+.metrica.plata-metrica {
+    border-left-color: var(--plata);
+    background: linear-gradient(135deg, rgba(199, 205, 215, .12), var(--superficie));
+}
+
+.metrica.morada-metrica {
+    border-left-color: var(--primario);
+    background: linear-gradient(135deg, rgba(123, 63, 228, .12), var(--superficie));
+}
+
+.metrica.plata-metrica strong {
+    color: var(--plata);
+}
+
+.metrica.morada-metrica strong {
+    color: var(--primario-claro);
 }
 
 .metrica small {
