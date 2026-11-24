@@ -252,10 +252,24 @@ require __DIR__ . '/includes/header.php';
         <form method="post" action="perfil.php">
             <input type="hidden" name="accion" value="solicitar_clave">
             <label for="clave_nueva">Nueva contrasena</label>
-            <input type="password" id="clave_nueva" name="clave_nueva" minlength="6" required autocomplete="new-password">
+            <div class="campo-clave">
+                <input type="password" id="clave_nueva" name="clave_nueva" minlength="6" required autocomplete="new-password">
+                <button type="button" class="ver-clave" data-clave="clave_nueva"
+                        aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
+                    <?= $iconos['ojo'] ?>
+                    <?= $iconos['ojo_tachado'] ?>
+                </button>
+            </div>
 
             <label for="clave_confirmar">Repetir contrasena</label>
-            <input type="password" id="clave_confirmar" name="clave_confirmar" minlength="6" required autocomplete="new-password">
+            <div class="campo-clave">
+                <input type="password" id="clave_confirmar" name="clave_confirmar" minlength="6" required autocomplete="new-password">
+                <button type="button" class="ver-clave" data-clave="clave_confirmar"
+                        aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
+                    <?= $iconos['ojo'] ?>
+                    <?= $iconos['ojo_tachado'] ?>
+                </button>
+            </div>
 
             <p><button type="submit">Enviar solicitud</button></p>
         </form>

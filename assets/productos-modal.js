@@ -7,6 +7,7 @@
 
     var cerrar = dialog.querySelector('.modal-cerrar');
 
+    /* Llena el modal con los datos del producto y lo muestra. */
     function abrir(fila) {
         document.getElementById('modal-codigo').textContent = fila.dataset.codigo || '';
         document.getElementById('modal-nombre').textContent = fila.dataset.nombre || '';
@@ -37,6 +38,7 @@
     }
 
     document.querySelectorAll('.fila-producto').forEach(function (fila) {
+        /* Al hacer clic en la fila, abre el modal. */
         fila.addEventListener('click', function (evento) {
             if (evento.target.closest('a, button')) {
                 return;
@@ -44,6 +46,7 @@
             abrir(fila);
         });
 
+        /* Con Enter o espacio tambien abre el modal. */
         fila.addEventListener('keydown', function (evento) {
             if (evento.key === 'Enter' || evento.key === ' ') {
                 evento.preventDefault();
@@ -52,10 +55,12 @@
         });
     });
 
+    /* Cierra el modal con la x. */
     cerrar.addEventListener('click', function () {
         dialog.close();
     });
 
+    /* Cierra el modal al hacer clic fuera de la caja. */
     dialog.addEventListener('click', function (evento) {
         if (evento.target === dialog) {
             dialog.close();

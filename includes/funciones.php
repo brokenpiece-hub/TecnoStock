@@ -1,16 +1,19 @@
 <?php
 
+/* Deja el texto seguro para mostrarlo en la pagina. */
 function e($valor): string
 {
     return htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
 }
 
+/* Envia al usuario a otra pagina y detiene el script. */
 function redirigir(string $ruta): void
 {
     header('Location: ' . $ruta);
     exit;
 }
 
+/* Devuelve un entero mayor o igual a 0, o null si el valor no sirve. */
 function entero_no_negativo($valor): ?int
 {
     if (!is_scalar($valor)) {
@@ -26,6 +29,7 @@ function entero_no_negativo($valor): ?int
     return $numero >= 0 ? $numero : null;
 }
 
+/* Devuelve el precio con 2 decimales, o null si no es valido. */
 function precio_valido($valor): ?string
 {
     if (!is_scalar($valor)) {
@@ -45,8 +49,7 @@ function precio_valido($valor): ?string
     return number_format($numero, 2, '.', '');
 }
 
-/* Datos para la barra de stock de las tarjetas.
-   La referencia es siempre 50: con 50 o mas la barra queda llena y desde ahi baja. */
+/* Calcula el ancho y el color de la barra de stock de una tarjeta. */
 function barra_stock($actual, $minimo): array
 {
     $actual = max(0, (int) $actual);
@@ -83,11 +86,13 @@ function barra_stock($actual, $minimo): array
     ];
 }
 
+/* Devuelve la lista de modulos del sistema. */
 function modulos_disponibles($pdo): array
 {
     return $pdo->query('SELECT id_modulo, clave, nombre FROM modulos ORDER BY id_modulo')->fetchAll();
 }
 
+/* Devuelve los modulos que tiene asignados un usuario. */
 function permisos_de_usuario($pdo, $idUsuario): array
 {
     $stmt = $pdo->prepare('SELECT id_modulo FROM usuario_modulos WHERE id_usuario = :id');
@@ -95,6 +100,7 @@ function permisos_de_usuario($pdo, $idUsuario): array
     return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 }
 
+/* Reemplaza los permisos de un usuario por los nuevos. */
 function guardar_permisos($pdo, $idUsuario, $modulos): void
 {
     $pdo->prepare('DELETE FROM usuario_modulos WHERE id_usuario = :id')->execute([':id' => $idUsuario]);
@@ -110,6 +116,7 @@ function guardar_permisos($pdo, $idUsuario, $modulos): void
     }
 }
 
+/* Arma la ruta para mostrar la foto de un producto. */
 function ruta_imagen($archivo, $base = ''): string
 {
     if ($archivo === null || $archivo === '') {
@@ -119,6 +126,7 @@ function ruta_imagen($archivo, $base = ''): string
     return $base . 'assets/img/productos/' . rawurlencode($archivo);
 }
 
+/* Guarda la imagen de un producto y dice si hubo algun error. */
 function procesar_imagen_producto($archivo): array
 {
     if (!is_array($archivo) || !isset($archivo['error']) || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
@@ -157,6 +165,7 @@ function procesar_imagen_producto($archivo): array
     return ['imagen' => $nombre, 'error' => ''];
 }
 
+/* Borra la imagen de un producto del servidor. */
 function borrar_imagen_producto($archivo): void
 {
     if ($archivo === null || $archivo === '') {
@@ -169,18 +178,20 @@ function borrar_imagen_producto($archivo): void
     }
 }
 
-/* RUT de usuario: se guarda sin puntos y con la K en mayuscula. */
+/* Limpia el RUT: sin puntos y con la K en mayuscula. */
 function rut_normalizado($valor): string
 {
     $rut = strtoupper(str_replace(['.', ' '], '', trim((string) $valor)));
     return preg_match('/^\d{7,8}-[\dK]$/', $rut) ? $rut : '';
 }
 
+/* Indica si el RUT tiene un formato valido. */
 function rut_valido($valor): bool
 {
     return rut_normalizado($valor) !== '';
 }
 
+/* Indica si ningun otro usuario ya usa ese RUT. */
 function rut_disponible($pdo, string $rut, int $idExcluido = 0): bool
 {
     if ($rut === '') {
@@ -192,6 +203,7 @@ function rut_disponible($pdo, string $rut, int $idExcluido = 0): bool
     return (int) $stmt->fetchColumn() === 0;
 }
 
+/* Arma la ruta para mostrar la foto de un usuario. */
 function ruta_imagen_usuario($archivo, string $base = ''): string
 {
     if ($archivo === null || $archivo === '') {
@@ -201,7 +213,7 @@ function ruta_imagen_usuario($archivo, string $base = ''): string
     return $base . 'assets/img/usuarios/' . rawurlencode($archivo);
 }
 
-/* Foto de perfil: JPG, PNG o WEBP, maximo 2 MB. */
+/* Guarda la foto del perfil y dice si hubo algun error. */
 function procesar_imagen_usuario($archivo): array
 {
     if (!is_array($archivo) || !isset($archivo['error']) || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
@@ -240,6 +252,7 @@ function procesar_imagen_usuario($archivo): array
     return ['foto' => $nombre, 'error' => ''];
 }
 
+/* Borra la foto de un usuario del servidor. */
 function borrar_imagen_usuario($archivo): void
 {
     if ($archivo === null || $archivo === '') {

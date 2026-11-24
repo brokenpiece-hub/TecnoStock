@@ -1,10 +1,12 @@
 <?php
 
+/* Indica si hay un usuario con sesion iniciada. */
 function esta_autenticado(): bool
 {
     return isset($_SESSION['usuario_id'], $_SESSION['usuario_nombre']);
 }
 
+/* Manda al login si no hay sesion iniciada. */
 function require_login(): void
 {
     if (!esta_autenticado()) {
@@ -13,6 +15,7 @@ function require_login(): void
     }
 }
 
+/* Guarda en la sesion los modulos que puede usar el usuario. */
 function cargar_permisos($pdo, $idUsuario): void
 {
     $stmt = $pdo->prepare(
@@ -25,6 +28,7 @@ function cargar_permisos($pdo, $idUsuario): void
     $_SESSION['permisos'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
 
+/* Indica si el usuario puede entrar a un modulo. */
 function tiene_permiso($clave): bool
 {
     if (!isset($_SESSION['permisos']) && esta_autenticado() && isset($GLOBALS['pdo'])) {
@@ -34,6 +38,7 @@ function tiene_permiso($clave): bool
     return isset($_SESSION['permisos']) && in_array($clave, $_SESSION['permisos'], true);
 }
 
+/* Detiene la pagina si el usuario no tiene el permiso pedido. */
 function requerir_permiso($clave, $base = ''): void
 {
     require_login();

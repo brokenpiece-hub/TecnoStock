@@ -67,7 +67,14 @@ require __DIR__ . '/includes/header.php';
     <input type="email" id="correo" name="correo" autocomplete="username" required value="<?= e($correo) ?>">
 
     <label for="clave">Contrasena:</label>
-    <input type="password" id="clave" name="clave" autocomplete="current-password" required>
+    <div class="campo-clave">
+        <input type="password" id="clave" name="clave" autocomplete="current-password" required>
+        <button type="button" class="ver-clave" data-clave="clave"
+                aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
+            <?= $iconos['ojo'] ?>
+            <?= $iconos['ojo_tachado'] ?>
+        </button>
+    </div>
 
     <button type="submit">Ingresar</button>
 </form>

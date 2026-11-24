@@ -26,6 +26,7 @@
             .trim();
     }
 
+    /* Muestra solo las filas que coinciden y actualiza el contador. */
     function aplicar() {
         var busqueda = normalizar(input.value);
         var visibles = 0;
@@ -67,6 +68,7 @@
         });
     }
 
+    /* Al escribir, espera un momento y filtra para no saltar. */
     input.addEventListener('input', function () {
         contenedor.classList.add('filtrando');
         window.clearTimeout(temporizador);

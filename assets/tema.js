@@ -4,6 +4,7 @@
     var boton = document.getElementById('tema-toggle');
     var clave = 'tecnostock-tema';
 
+    /* Pone el modo elegido y lo guarda para la proxima visita. */
     function aplicar(tema) {
         var oscuro = tema !== 'claro';
         raiz.dataset.tema = oscuro ? 'oscuro' : 'claro';
@@ -29,6 +30,7 @@
     aplicar(raiz.dataset.tema);
 
     if (boton) {
+        /* Alterna entre modo claro y oscuro. */
         boton.addEventListener('click', function () {
             aplicar(raiz.dataset.tema === 'oscuro' ? 'claro' : 'oscuro');
         });

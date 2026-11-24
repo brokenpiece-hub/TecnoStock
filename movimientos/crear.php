@@ -359,6 +359,7 @@ require __DIR__ . '/../includes/header.php';
         return;
     }
 
+    /* Muestra u oculta una seccion del formulario. */
     function activar(seccion, mostrar) {
         seccion.classList.toggle('oculto', !mostrar);
         var campos = seccion.querySelectorAll('input, select, textarea');
@@ -367,6 +368,7 @@ require __DIR__ . '/../includes/header.php';
         }
     }
 
+    /* Elige si se usa un producto existente o se crea uno nuevo. */
     function actualizar() {
         var esEntrada = tipo.value === 'entrada';
         check.disabled = !esEntrada;

@@ -1319,6 +1319,83 @@ input[type="file"] {
     gap: 0 16px;
 }
 
+/* Contrasena con boton de ojo para ver lo escrito. */
+.campo-clave {
+    position: relative;
+}
+
+.campo-clave input {
+    width: 100%;
+    padding-right: 46px;
+}
+
+.ver-clave {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    min-height: 34px;
+    width: 34px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--texto-tenue);
+    box-shadow: none;
+}
+
+.ver-clave .icono {
+    width: 18px;
+    height: 18px;
+}
+
+.ver-clave .ojo-tachado,
+.ver-clave.activo .ojo-abierto {
+    display: none;
+}
+
+.ver-clave.activo .ojo-tachado {
+    display: block;
+}
+
+.ver-clave:hover,
+.ver-clave.activo {
+    background: var(--gris-suave);
+    color: var(--primario);
+    box-shadow: none;
+}
+
+/* En el login el ojo va al lado del cuadro, no dentro. */
+.login-form .campo-clave {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-form .campo-clave input {
+    width: auto;
+    min-width: 0;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.login-form .ver-clave {
+    position: static;
+    transform: none;
+    width: 44px;
+    min-height: 44px;
+    flex: 0 0 44px;
+    margin-top: 6px;
+    border: 1px solid var(--borde);
+    background: var(--campo);
+}
+
+.login-form .ver-clave:hover,
+.login-form .ver-clave.activo {
+    background: var(--gris-suave);
+    color: var(--primario);
+    box-shadow: none;
+}
+
 /* Buscador de productos en nuevas ventas. */
 .campo-producto {
     position: relative;

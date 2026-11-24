@@ -2,7 +2,7 @@
 
 /* Funciones compartidas para ordenar las tablas por cabecera. */
 
-/* Numericas y fechas empiezan de mayor a menor; el texto, en orden alfabetico. */
+/* Elige si una columna empieza de mayor a menor o en orden alfabetico. */
 function direccion_inicial_orden($columna)
 {
     $inicial = [
@@ -33,7 +33,7 @@ function url_ordenamiento($columna, $ordenActual, $direccionActual, $filtros)
     return 'index.php?' . http_build_query($parametros);
 }
 
-/* Columnas que se ordenan como numero (el resto se ordena como texto). */
+/* Indica si una columna se ordena como numero y no como texto. */
 function es_columna_numerica($columna)
 {
     return in_array($columna, [
@@ -42,7 +42,7 @@ function es_columna_numerica($columna)
     ], true);
 }
 
-/* Devuelve la cabecera clickeable con la flecha de direccion. */
+/* Devuelve la cabecera clickeable con su flecha de direccion. */
 function cabecera_ordenable($columna, $etiqueta, $orden, $direccion, $filtros)
 {
     $activo = $orden === $columna;

@@ -1,5 +1,5 @@
 <?php
-/* Textos de exito de cada evento. Se usan en la notificacion flotante. */
+/* Devuelve el texto de exito que se muestra en la notificacion. */
 function texto_mensaje(string $modulo, string $clave): string
 {
     $mensajes = [

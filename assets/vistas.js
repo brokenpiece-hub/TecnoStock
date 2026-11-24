@@ -2,6 +2,7 @@
 (function () {
     var clave = 'tecnostock-vista-productos';
 
+    /* Cambia el aspecto entre lista y tarjetas. */
     function aplicar(contenedor, vista) {
         contenedor.dataset.vista = vista;
 

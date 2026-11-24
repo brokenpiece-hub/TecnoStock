@@ -150,7 +150,14 @@ require __DIR__ . '/../includes/header.php';
             </div>
             <div>
                 <label for="clave">Contrasena</label>
-                <input type="password" id="clave" name="clave" minlength="6" required>
+                <div class="campo-clave">
+                    <input type="password" id="clave" name="clave" minlength="6" required>
+                    <button type="button" class="ver-clave" data-clave="clave"
+                            aria-label="Mostrar contrasena" aria-pressed="false" title="Mostrar contrasena">
+                        <?= $iconos['ojo'] ?>
+                        <?= $iconos['ojo_tachado'] ?>
+                    </button>
+                </div>
             </div>
             <div>
                 <label for="estado">Estado</label>

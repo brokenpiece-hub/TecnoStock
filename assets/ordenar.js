@@ -1,5 +1,6 @@
 /* Ordena las filas en el navegador: la cabecera ya no recarga la pagina. */
 (function () {
+    /* Quita acentos y mayusculas para ordenar texto. */
     function normalizar(texto) {
         return String(texto)
             .toLowerCase()
@@ -8,6 +9,7 @@
             .trim();
     }
 
+    /* Obtiene el valor de una columna para comparar dos filas. */
     function valor_de_celda(fila, indice, tipo) {
         var celda = fila.cells[indice];
         var texto = celda ? (celda.getAttribute('data-orden-valor') || celda.textContent) : '';
@@ -20,6 +22,7 @@
         return normalizar(texto);
     }
 
+    /* Al hacer clic en una cabecera, ordena las filas de la tabla. */
     document.addEventListener('click', function (evento) {
         if (evento.defaultPrevented || evento.button !== 0 || evento.metaKey ||
             evento.ctrlKey || evento.shiftKey || evento.altKey) {

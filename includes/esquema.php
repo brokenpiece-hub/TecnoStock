@@ -2,6 +2,7 @@
 
 /* Agrega las columnas y la tabla nuevas sin borrar datos ya guardados. */
 
+/* Indica si una tabla ya tiene una columna. */
 function columna_existe($pdo, string $tabla, string $columna): bool
 {
     $stmt = $pdo->prepare(
@@ -12,6 +13,7 @@ function columna_existe($pdo, string $tabla, string $columna): bool
     return (int) $stmt->fetchColumn() > 0;
 }
 
+/* Indica si una tabla ya tiene un indice. */
 function indice_existe($pdo, string $tabla, string $indice): bool
 {
     $stmt = $pdo->prepare(
@@ -22,6 +24,7 @@ function indice_existe($pdo, string $tabla, string $indice): bool
     return (int) $stmt->fetchColumn() > 0;
 }
 
+/* Agrega lo que falte para el perfil sin borrar datos. */
 function asegurar_esquema_perfil($pdo): void
 {
     if (!columna_existe($pdo, 'usuarios', 'rut')) {

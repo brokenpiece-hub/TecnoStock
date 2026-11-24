@@ -11,8 +11,7 @@ function clp_a_usd(float $monto): float
     return $monto / CLP_POR_USD;
 }
 
-/* Suma una lista de totales por moneda y devuelve su equivalente en USD.
-   Solo se convierte CLP: USD ya esta en la moneda pedida y EUR no se convierte. */
+/* Suma los totales y los pasa a USD (solo convierte CLP). */
 function total_en_usd(array $totales): float
 {
     $total = 0.0;

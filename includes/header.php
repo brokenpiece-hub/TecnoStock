@@ -29,6 +29,8 @@ $iconos = [
     'perfil'       => '<svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>',
     'sol'          => '<svg class="icono tema-icono-claro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>',
     'luna'         => '<svg class="icono tema-icono-oscuro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>',
+    'ojo'          => '<svg class="icono ojo-abierto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    'ojo_tachado'  => '<svg class="icono ojo-tachado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3l18 18"/><path d="M10.6 5.2A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 3.9"/><path d="M6.2 6.3A17 17 0 0 0 2 12s3.5 7 10 7a10.6 10.6 0 0 0 4-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
 ];
 ?>
 <!doctype html>
@@ -50,7 +52,7 @@ $iconos = [
             document.documentElement.style.colorScheme = guardado === 'claro' ? 'light' : 'dark';
         })();
     </script>
-    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=27">
+    <link rel="stylesheet" href="<?= e($base) ?>assets/estilos.css?v=31">
     <script src="<?= e($base) ?>assets/tema.js?v=1" defer></script>
     <script src="<?= e($base) ?>assets/buscador.js?v=4" defer></script>
     <script src="<?= e($base) ?>assets/buscador-ventas.js?v=1" defer></script>
@@ -59,6 +61,7 @@ $iconos = [
     <script src="<?= e($base) ?>assets/aviso.js?v=1" defer></script>
     <script src="<?= e($base) ?>assets/notificacion.js?v=1" defer></script>
     <script src="<?= e($base) ?>assets/productos-modal.js?v=2" defer></script>
+    <script src="<?= e($base) ?>assets/ver-clave.js?v=2" defer></script>
 </head>
 <body class="<?= $login ? 'login-body' : 'app-body' ?>">
 

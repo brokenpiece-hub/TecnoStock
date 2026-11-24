@@ -14,6 +14,7 @@
     var formulario = input.closest('form');
     var activo = -1;
 
+    /* Quita acentos y mayusculas para comparar nombres. */
     function normalizar(texto) {
         return texto
             .toLowerCase()
@@ -22,23 +23,27 @@
             .trim();
     }
 
+    /* Devuelve solo las opciones que no estan ocultas. */
     function visibles() {
         return opciones.filter(function (opcion) {
             return !opcion.hidden;
         });
     }
 
+    /* Muestra la lista de productos. */
     function abrir() {
         lista.hidden = false;
         input.setAttribute('aria-expanded', 'true');
     }
 
+    /* Oculta la lista de productos. */
     function cerrar() {
         lista.hidden = true;
         input.setAttribute('aria-expanded', 'false');
         activo = -1;
     }
 
+    /* Deja una opcion marcada como elegida. */
     function resaltar(opcion) {
         opciones.forEach(function (otra) {
             otra.classList.remove('activo');
@@ -51,6 +56,7 @@
         opcion.setAttribute('aria-selected', 'true');
     }
 
+    /* Muestra solo los nombres que coinciden con lo escrito. */
     function filtrar() {
         var busqueda = normalizar(input.value);
         var total = 0;
@@ -68,6 +74,7 @@
         abrir();
     }
 
+    /* Quita el producto elegido y limpia el stock mostrado. */
     function limpiarSeleccion() {
         idOculto.value = '';
         textoStock.textContent = 'Stock disponible: seleccione un producto';
@@ -75,6 +82,7 @@
         resaltar(null);
     }
 
+    /* Guarda el producto elegido y muestra su stock y precio. */
     function seleccionar(opcion) {
         idOculto.value = opcion.dataset.id;
         input.value = opcion.dataset.nombre;
@@ -85,19 +93,23 @@
         cerrar();
     }
 
+    /* Al enfocar el campo, muestra la lista. */
     input.addEventListener('focus', function () {
         filtrar();
     });
 
+    /* Al escribir, limpia la eleccion y filtra. */
     input.addEventListener('input', function () {
         limpiarSeleccion();
         filtrar();
     });
 
+    /* Al salir del campo, oculta la lista. */
     input.addEventListener('blur', function () {
         cerrar();
     });
 
+    /* Al bajar el boton, elige el producto sin perder el campo. */
     lista.addEventListener('mousedown', function (evento) {
         var opcion = evento.target.closest('li[role="option"]');
         if (opcion) {
@@ -106,6 +118,7 @@
         }
     });
 
+    /* Al hacer clic, elige el producto. */
     lista.addEventListener('click', function (evento) {
         var opcion = evento.target.closest('li[role="option"]');
         if (opcion) {
@@ -113,6 +126,7 @@
         }
     });
 
+    /* Con flechas recorre la lista, Enter elige y Escape cierra. */
     input.addEventListener('keydown', function (evento) {
         var opcionesVisibles = visibles();
 
@@ -137,6 +151,7 @@
         }
     });
 
+    /* No deja enviar el formulario si no se eligio producto. */
     formulario.addEventListener('submit', function (evento) {
         if (idOculto.value === '') {
             evento.preventDefault();
