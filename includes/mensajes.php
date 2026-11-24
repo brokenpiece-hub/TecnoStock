@@ -6,6 +6,7 @@ function texto_mensaje(string $modulo, string $clave): string
         'productos' => [
             'creado'      => 'Producto creado correctamente.',
             'editado'     => 'Producto actualizado correctamente.',
+            'editado_con_ajuste' => 'Producto actualizado. El ajuste de stock quedo registrado como movimiento.',
             'desactivado' => 'Producto desactivado correctamente.',
             'activado'    => 'Producto activado correctamente.',
         ],

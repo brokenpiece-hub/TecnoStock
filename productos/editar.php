@@ -114,39 +114,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imagenFinal = $archivo['imagen'];
         }
 
-        $update = $pdo->prepare(
-            'UPDATE productos
-                SET codigo = :codigo,
-                    nombre = :nombre,
-                    descripcion = :descripcion,
-                    precio = :precio,
-                    moneda = :moneda,
-                    stock_actual = :stock_actual,
-                    stock_minimo = :stock_minimo,
-                    id_categoria = :id_categoria,
-                    marca = :marca,
-                    imagen = :imagen
-              WHERE id_producto = :id'
-        );
-        $update->execute([
-            ':codigo'       => $codigo,
-            ':nombre'       => $datos['nombre'],
-            ':descripcion'  => $datos['descripcion'],
-            ':precio'       => $precio,
-            ':moneda'       => $datos['moneda'],
-            ':stock_actual' => $stockActual,
-            ':stock_minimo' => $stockCritico,
-            ':id_categoria' => $idCategoria,
-            ':marca'        => $datos['marca'],
-            ':imagen'       => $imagenFinal,
-            ':id'           => $id,
-        ]);
+        $pdo->beginTransaction();
+        try {
+            /* Se vuelve a leer con bloqueo para medir el ajuste real.
+               Asi un movimiento reciente no se pierde al guardar la edicion. */
+            $stmtStock = $pdo->prepare(
+                'SELECT stock_actual FROM productos WHERE id_producto = :id FOR UPDATE'
+            );
+            $stmtStock->execute([':id' => $id]);
+            $filaStock = $stmtStock->fetch();
+            if ($filaStock === false) {
+                throw new Exception('El producto ya no existe.');
+            }
 
-        if (($quitarImagen || $archivo['imagen'] !== null) && $imagenActual !== null) {
-            borrar_imagen_producto($imagenActual);
+            $stockAnterior = (int) $filaStock['stock_actual'];
+            $diferencia = $stockActual - $stockAnterior;
+
+            $update = $pdo->prepare(
+                'UPDATE productos
+                    SET codigo = :codigo,
+                        nombre = :nombre,
+                        descripcion = :descripcion,
+                        precio = :precio,
+                        moneda = :moneda,
+                        stock_actual = :stock_actual,
+                        stock_minimo = :stock_minimo,
+                        id_categoria = :id_categoria,
+                        marca = :marca,
+                        imagen = :imagen
+                  WHERE id_producto = :id'
+            );
+            $update->execute([
+                ':codigo'       => $codigo,
+                ':nombre'       => $datos['nombre'],
+                ':descripcion'  => $datos['descripcion'],
+                ':precio'       => $precio,
+                ':moneda'       => $datos['moneda'],
+                ':stock_actual' => $stockActual,
+                ':stock_minimo' => $stockCritico,
+                ':id_categoria' => $idCategoria,
+                ':marca'        => $datos['marca'],
+                ':imagen'       => $imagenFinal,
+                ':id'           => $id,
+            ]);
+
+            /* Si el stock cambio, queda registro como entrada o salida. */
+            $conAjuste = $diferencia !== 0;
+            if ($conAjuste) {
+                $pdo->prepare(
+                    'INSERT INTO movimientos
+                        (tipo, cantidad, observacion, id_producto, id_usuario)
+                     VALUES
+                        (:tipo, :cantidad, :observacion, :id_producto, :id_usuario)'
+                )->execute([
+                    ':tipo'        => $diferencia > 0 ? 'entrada' : 'salida',
+                    ':cantidad'    => abs($diferencia),
+                    ':observacion' => 'Ajuste de stock al editar el producto',
+                    ':id_producto' => $id,
+                    ':id_usuario'  => $_SESSION['usuario_id'],
+                ]);
+            }
+
+            $pdo->commit();
+
+            if (($quitarImagen || $archivo['imagen'] !== null) && $imagenActual !== null) {
+                borrar_imagen_producto($imagenActual);
+            }
+
+            redirigir('index.php?msg=' . ($conAjuste ? 'editado_con_ajuste' : 'editado'));
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            borrar_imagen_producto($archivo['imagen']);
+            $errores[] = 'No se pudo guardar el producto.';
         }
-
-        redirigir('index.php?msg=editado');
     }
 }
 $titulo = 'TecnoStock - Editar producto';
@@ -216,6 +258,7 @@ require __DIR__ . '/../includes/header.php';
             <div>
                 <label for="stock_actual">Stock actual</label>
                 <input type="number" step="1" min="0" id="stock_actual" name="stock_actual" required value="<?= e($datos['stock_actual']) ?>">
+                <small class="ayuda">Si cambias esta cantidad se registrara una entrada o salida automatica.</small>
             </div>
             <div>
                 <label for="stock_minimo">Stock critico</label>
